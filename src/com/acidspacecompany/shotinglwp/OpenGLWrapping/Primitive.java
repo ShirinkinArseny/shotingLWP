@@ -13,8 +13,8 @@ public class Primitive {
     public void startDraw() {
         Graphic.startDrawPrimitive(bufferId);
     }
-    public void draw(float x, float y) {
-        Graphic.drawPrimitive(pointsNum, r,g,b,a,lineWidth,x,y);
+    public void draw(float x, float y, float scale, float angle) {
+        Graphic.drawPrimitive(pointsNum, r,g,b,a,lineWidth,x,y,scale,angle);
     }
 
     public Primitive(float[] vertexes, float r,float g, float b, float a, float lineWidth) {
