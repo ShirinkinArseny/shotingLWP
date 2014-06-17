@@ -18,7 +18,7 @@ public class LiveWallpaperService extends OpenGLES20LiveWallpaperService {
 
     public LifecycleRenderer getRenderer() {
         //Создаем рекламу
-       // AdBuilder.initAd(getBaseContext());
+        // AdBuilder.initAd(getBaseContext());
         return new MyRenderer();
     }
 
