@@ -168,7 +168,7 @@ public class Graphic {
         glLineWidth(width);
     }
 
-    private static void endDrawLines() {
+    public static void endDrawLines() {
         //Создаем FloatBuffer из тех вершин, которые хранятся в списке
         final FloatBuffer nativeVertexes = createNativeFloatArray(lineVertexes);
         //Количество элементов в буффере
