@@ -4,9 +4,7 @@ import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 
 import java.util.*;
 
-import static com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic.end;
-import static com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic.endDrawLines;
-import static com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic.startDrawLines;
+import static com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic.*;
 
 public class World {
 
@@ -61,9 +59,9 @@ public class World {
     }
 
     private void draw() {
-        startDrawLines(0, 0, 0, 1, 1.3f);
+        //startDrawLines(0, 0, 0, 1, 1.3f);
+        startDraw();
         m.draw();
-        endDrawLines();
         end();
     }
 }
