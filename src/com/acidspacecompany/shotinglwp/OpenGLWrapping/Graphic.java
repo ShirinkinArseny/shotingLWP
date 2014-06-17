@@ -203,7 +203,7 @@ public class Graphic {
 
         Matrix.translateM(offsetMatrix, 0, x,y,0);
         Matrix.scaleM(scaleMatrix,0,scaleX, scaleY, 1);
-        Matrix.rotateM(rotateMatrix, 0, (float)Math.toDegrees(angle),0,0,1);
+        Matrix.rotateM(rotateMatrix, 0, angle,0,0,1);
         Matrix.multiplyMM(resultMatrix, 0, rotateMatrix, 0, scaleMatrix, 0);
         Matrix.multiplyMM(resultMatrix, 0, offsetMatrix, 0, resultMatrix, 0);
         Matrix.multiplyMM(resultMatrix, 0, orthoMatrix, 0, resultMatrix, 0);
