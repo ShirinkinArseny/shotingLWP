@@ -7,6 +7,7 @@ import android.util.Log;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.LinkedList;
 
 
 import static android.opengl.GLES20.*;
@@ -58,6 +59,13 @@ public class Graphic {
                 //Добавляем значения из массива
                         put(javaFloatArray);
     }
+
+    private static FloatBuffer createNativeFloatArray(LinkedList<Float> vertexes) {
+        FloatBuffer result = createFloatBuffer(vertexes.size());
+        for (Float vertex : vertexes)
+            result.put(vertex);
+        return result;
+    }
     private static FloatBuffer createFloatBuffer(int length) {
         return  ByteBuffer.
                 //Теперь задаем размер таким, чтобы влезли все величины
@@ -75,9 +83,6 @@ public class Graphic {
     //Шейдер, который просто заливает всё цветом
     private static FillColorShader fillColorShader;
 
-    //Итентификатор VBO
-    private static int vboId;
-
     /**
      * Инициализация системы. Компилирование всего и вся.
      * @param context Контекст, в котором содержатся все ресурсы
@@ -86,35 +91,6 @@ public class Graphic {
         //Загружаем шейдеры
         fillColorShader = new FillColorShader(context);
         fillColorShader.validate();
-
-
-        //Создаем VBO для вершин прямоугольника
-        int[] buffers = new int[1];
-        glGenBuffers(1,buffers,0);
-        if (buffers[0]==0)
-            Log.e(TAG, "Could not create buffers");
-        vboId = buffers[0];
-        //Создаем вершины
-        FloatBuffer vboBufferVertexes = createNativeFloatArray(new float[]{
-                //Левый нижний угол
-                0,0,
-                //Правый верхний угол
-                1,1,
-                //Левый верхний угол
-                0,1,
-                //Правый нижний угол
-                1,0,
-                //Правый верхний угол
-                1,1,
-                //Левый нижний угол
-                0,0
-        });
-        //Задаем указатель на начало массива
-        vboBufferVertexes.position(0);
-        //Указываем данные
-        glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        glBufferData(GL_ARRAY_BUFFER,vboBufferVertexes.capacity() * BYTES_PER_FLOAT, vboBufferVertexes, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         //Включаем alpha-blending
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -134,7 +110,6 @@ public class Graphic {
      */
     public static void destroy() {
         fillColorShader.delete();
-        glDeleteBuffers(1, new int[]{vboId}, 0);
     }
 
     /**
@@ -150,29 +125,42 @@ public class Graphic {
         glUseProgram(0);
     }
 
-    public static void startDrawLines() {
+
+    //Буфер для линий в виде списка
+    private static LinkedList<Float> lineVertexes = new LinkedList<>();
+    public static void startDrawLines(float r,float g, float b, float a, float width) {
+        //Очищаем буфер вершин
+        lineVertexes.clear();
         fillColorShader.use();
+        //Задаем цвет
+        fillColorShader.setColor(r,g,b,a);
+        glLineWidth(width);
+    }
+
+    private static void endDrawLines() {
+        //Создаем FloatBuffer из тех вершин, которые хранятся в списке
+        final FloatBuffer nativeVertexes = createNativeFloatArray(lineVertexes);
+        //Количество элементов в буффере
+        final int floatSize = lineVertexes.size();
+        //Передаем их в шейдер
+        final int aPosition = fillColorShader.get_aPosition();
+        nativeVertexes.position(0);
+        glEnableVertexAttribArray(aPosition);
+        glVertexAttribPointer(aPosition, POSITION_COMPONENT_COUNT, GL_FLOAT, false, 0, nativeVertexes);
+        //Цвет уже задан
+        projectionMatrixBuffer.position(0);
+        fillColorShader.setMatrix(projectionMatrixBuffer);
+        glDrawArrays(GL_LINES, 0, floatSize / POSITION_COMPONENT_COUNT);
     }
 
     //Буффер для хранения координат вершин линии
     private static FloatBuffer lineBuffer = createFloatBuffer(4);
 
-    public static void drawLine(float x1, float y1, float x2, float y2, float width, float r, float g, float b, float a) {
-        putValuesIntoFloatBuffer(new float[]{x1,y1,x2,y2}, lineBuffer);
-        //Передаем позицию линии в шейдер
-        final int aPosition = fillColorShader.get_aPosition();
-        lineBuffer.position(0);
-        glEnableVertexAttribArray(aPosition);
-        glVertexAttribPointer(aPosition, POSITION_COMPONENT_COUNT, GL_FLOAT, false, 0, lineBuffer);
-        //Задаем цвет
-        fillColorShader.setColor(r, g, b, a);
-        //Ширина линии задается не в шейдере так как
-        //она используется на этапе растеризации,
-        //а не на этапе шейдера
-        glLineWidth(width);
-        projectionMatrixBuffer.position(0);
-        fillColorShader.setMatrix(projectionMatrixBuffer);
-        glDrawArrays(GL_LINES, 0, 2);
+    public static void drawLine(float x1, float y1, float x2, float y2) {
+        lineVertexes.add(x1);
+        lineVertexes.add(y1);
+        lineVertexes.add(x2);
+        lineVertexes.add(y2);
     }
 
 
