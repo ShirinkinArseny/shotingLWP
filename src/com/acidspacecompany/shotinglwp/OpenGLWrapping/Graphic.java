@@ -95,7 +95,7 @@ public class Graphic {
 
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-            glBufferData(bufferId, nativeVertexes.capacity() * BYTES_PER_FLOAT, nativeVertexes, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, nativeVertexes.capacity() * BYTES_PER_FLOAT, nativeVertexes, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         return bufferId;

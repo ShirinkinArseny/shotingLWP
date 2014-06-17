@@ -25,6 +25,7 @@ public class Map {
     }
 
     public void draw() {
+        Man.startDrawPrimitives();
         for(Man m: men)
             m.draw();
     }

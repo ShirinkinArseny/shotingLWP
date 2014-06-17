@@ -14,6 +14,9 @@ public class Man extends Point{
     private float sin;
     private Point target;
     private static Primitive round;
+    public static void startDrawPrimitives() {
+        round.startDraw();
+    }
 
     public static void init() {
         float[] vertexes=new float[72];

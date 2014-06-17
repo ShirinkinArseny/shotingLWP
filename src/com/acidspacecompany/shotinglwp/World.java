@@ -13,6 +13,8 @@ public class World {
     private Map m=new Map();
 
     public World() {
+    }
+    public void init() {
         Man.init();
     }
 

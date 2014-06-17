@@ -1,5 +1,7 @@
 package com.acidspacecompany.shotinglwp.OpenGLWrapping;
 
+import android.opengl.GLES20;
+
 public class Primitive {
 
     private int bufferId;
