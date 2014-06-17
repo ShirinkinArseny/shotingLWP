@@ -80,6 +80,27 @@ public class Graphic {
         floatBuffer.put(values);
     }
 
+    public static int createPrimitive(float[] vertexes) {
+        //Создаем буффер вершин
+        FloatBuffer nativeVertexes = createNativeFloatArray(vertexes);
+        nativeVertexes.position(0);
+
+        //Генерируем буффер OpenGL
+        int[] buffers = new int[1];
+        glGenBuffers(1,buffers,0);
+        final int bufferId = buffers[0];
+        //Ловим ошибку создания
+        if (bufferId == 0)
+            Log.e(TAG, "Could not create buffer");
+
+
+        glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+            glBufferData(bufferId, nativeVertexes.capacity() * BYTES_PER_FLOAT, nativeVertexes, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        return bufferId;
+    }
+
     //Шейдер, который просто заливает всё цветом
     private static FillColorShader fillColorShader;
 
@@ -119,6 +140,16 @@ public class Graphic {
         //Очищаем экран белым цветом
         glClearColor(1.0f,1.0f,1.0f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    public static void startDrawPrimitive(int bufferId) {
+        fillColorShader.use();
+        //Задаем позицию вершин
+        final int aPosition = fillColorShader.get_aPosition();
+        glEnableVertexAttribArray(aPosition);
+        glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+            glVertexAttribPointer(aPosition, POSITION_COMPONENT_COUNT, GL_FLOAT, false, 0, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     public static void end() {
@@ -162,6 +193,24 @@ public class Graphic {
         lineVertexes.add(x2);
         lineVertexes.add(y2);
     }
+
+    private static float[] offsetMatrix = new float[16], resultMatrix = new float[16];
+    private static void createOffset(float x, float y) {
+        Matrix.setIdentityM(offsetMatrix, 0);
+        Matrix.setIdentityM(resultMatrix, 0);
+        Matrix.translateM(offsetMatrix, 0, x,y,0);
+        Matrix.multiplyMM(resultMatrix, 0, offsetMatrix, 0, orthoMatrix, 0);
+    }
+
+    public static void drawPrimitive(int pointsCount, float r, float g, float b, float a, float lineWidth, float xOffset, float yOffset) {
+        glLineWidth(lineWidth);
+        fillColorShader.setColor(r,g,b,a);
+        createOffset(xOffset,yOffset);
+        fillColorShader.setMatrix(resultMatrix,0);
+
+        glDrawArrays(GL_LINES,0, pointsCount);
+    }
+
 
 
 }
