@@ -8,7 +8,7 @@ import static com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic.drawLine;
 public class Man extends Point{
 
     private float width;
-    private double angle;
+    private float angle;
     private float speed;
     private float cos;
     private float sin;
@@ -39,7 +39,7 @@ public class Man extends Point{
     }
 
     public void draw() {
-        round.draw(getX(), getY());
+        round.draw(getX(), getY(), width, angle);
     }
 
     private void reAngle() {
@@ -54,7 +54,7 @@ public class Man extends Point{
 
     public void setTarget(Point p) {
         target=p;
-        angle=Math.atan2(target.getY()-getY(), target.getX()-getX());
+        angle= (float) Math.atan2(target.getY()-getY(), target.getX()-getX());
         reAngle();
     }
 
