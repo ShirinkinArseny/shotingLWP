@@ -14,7 +14,11 @@ public class Point {
     }
 
     public Point add(Point v2) {
-        return new Point(x + v2.x, y + v2.y);
+        return add(x + v2.x, y + v2.y);
+    }
+
+    public Point add(float dx, float dy) {
+        return new Point(x + dx, y + dy);
     }
 
     public Point negate() {
@@ -49,12 +53,12 @@ public class Point {
 
     private static final double rightAngle=Math.PI/2;
 
-    public double getDistanceToSegment(Segment s) {
+    public double getSquaredDistanceToSegment(Segment s) {
         double angle1=Utils.getAngle(this, s.getStart(), s.getEnd());
-        if (angle1>rightAngle) return s.getStart().getDistanceToPoint(this);
+        if (angle1>rightAngle) return s.getStart().getSquaredDistanceToPoint(this);
         double angle2=Utils.getAngle(this, s.getEnd(), s.getStart());
-        if (angle2>rightAngle) return s.getEnd().getDistanceToPoint(this);
-        return Utils.getLengthToLine(this, s.getStart(), s.getEnd());
+        if (angle2>rightAngle) return s.getEnd().getSquaredDistanceToPoint(this);
+        return Utils.getSquaredLengthToLine(this, s.getStart(), s.getEnd());
     }
 
     public void rotate(float angle, Point center) {

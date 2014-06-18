@@ -1,19 +1,25 @@
 package com.acidspacecompany.shotinglwp;
 
 import com.acidspacecompany.shotinglwp.Geometry.Point;
+import com.acidspacecompany.shotinglwp.Geometry.Segment;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitive;
+
+import java.util.LinkedList;
 
 import static com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic.drawLine;
 
 public class Man extends Point{
 
     private float width;
+    private float widthPow2;
     private float angle;
+    private float angleRadian;
     private float speed;
     private float cos;
     private float sin;
     private Point target;
     private static Primitive round;
+
     public static void startDrawPrimitives() {
         round.startDraw();
     }
@@ -42,12 +48,13 @@ public class Man extends Point{
     }
 
     public void draw() {
-        round.draw(getX(), getY(), width, angle);
+        round.draw(getX(), getY(), width, angleRadian);
     }
 
     private void reAngle() {
         sin= (float) Math.sin(angle);
         cos= (float) Math.cos(angle);
+        angleRadian= (float) Math.toDegrees(angle);
     }
 
     public void roll(float anlge) {
@@ -61,7 +68,18 @@ public class Man extends Point{
         reAngle();
     }
 
-    public void move(float dt) {
+    private boolean getIsIntersect(Segment s) {
+        return width>= getSquaredDistanceToSegment(s);
+    }
+
+    public void move(float dt, LinkedList<Segment> segms) {
+        float dx=cos*dt*speed;
+        float dy=sin*dt*speed;
+        Point m=this.add(dx, dy);
+        for (Segment s: segms) {
+            if (widthPow2 >= m.getSquaredDistanceToSegment(s))
+                return;
+        }
         move(cos*dt*speed, sin*dt*speed);
     }
 
@@ -69,6 +87,7 @@ public class Man extends Point{
         super(x, y);
         target=this;
         width=w;
+        widthPow2=w*w;
         this.speed=speed;
         angle=0;
         reAngle();

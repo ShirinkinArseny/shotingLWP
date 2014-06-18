@@ -3,6 +3,7 @@ package com.acidspacecompany.shotinglwp.OpenGLWrapping;
 import android.content.Context;
 import android.opengl.Matrix;
 import android.util.Log;
+import com.acidspacecompany.shotinglwp.Geometry.Point;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -192,6 +193,10 @@ public class Graphic {
         lineVertexes.add(y1);
         lineVertexes.add(x2);
         lineVertexes.add(y2);
+    }
+
+    public static void drawLine(Point p1, Point p2) {
+        drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
 
     private static float[] offsetMatrix = new float[16], scaleMatrix = new float[16], rotateMatrix = new float[16], resultMatrix = new float[16];

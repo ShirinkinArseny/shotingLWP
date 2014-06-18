@@ -38,12 +38,12 @@ public class Utils {
         return Math.sqrt(halfPerimeter*(halfPerimeter-l1)*(halfPerimeter-l2)*(halfPerimeter-l3));
     }
 
-    public static double getLengthToLine
+    public static double getSquaredLengthToLine
             (Point from, Point ptOnLine1, Point ptOnLine2) {
         float a = ptOnLine1.y - ptOnLine2.y;
         float b = ptOnLine2.x - ptOnLine1.x;
         float c = ptOnLine1.x * ptOnLine2.y - ptOnLine2.x * ptOnLine1.y;
-        double result = (a * from.x + b * from.y + c) / Math.sqrt(a * a + b * b);
+        double result = Math.pow(a * from.x + b * from.y + c, 2) / (a * a + b * b);
         if (Math.abs(result) <= epsilon)
             return 0;
         else return result;
