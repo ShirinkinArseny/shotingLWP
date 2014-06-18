@@ -2,11 +2,7 @@ package com.acidspacecompany.shotinglwp;
 
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.Geometry.Segment;
-import com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitives.Primitive;
-
-import java.util.LinkedList;
-
-import static com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic.drawLine;
+import com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitives.LinePrimitive;
 
 public class Man extends Point{
 
@@ -15,12 +11,10 @@ public class Man extends Point{
     private float angle;
     private float angleRadian;
     private float speed;
-    private float cos;
-    private float sin;
     private float cosSpeed;
     private float sinSpeed;
     private Point target;
-    private static Primitive round;
+    private static LinePrimitive round;
 
     public static void startDraw() {
         round.startDraw();
@@ -46,7 +40,7 @@ public class Man extends Point{
         vertexes[70]= 1;
         vertexes[71]= 0;
 
-        round=new Primitive(vertexes, 0, 0, 0, 1, 1.3f);
+        round=new LinePrimitive(vertexes, 0, 0, 0, 1, 1.3f);
     }
 
     public void draw() {
@@ -54,16 +48,11 @@ public class Man extends Point{
     }
 
     private void reAngle() {
-        sin= (float) Math.sin(angle);
-        cos= (float) Math.cos(angle);
-        cosSpeed=cos*speed;
-        sinSpeed=sin*speed;
+        float sin = (float) Math.sin(angle);
+        float cos = (float) Math.cos(angle);
+        cosSpeed= cos *speed;
+        sinSpeed= sin *speed;
         angleRadian= (float) Math.toDegrees(angle);
-    }
-
-    public void roll(float anlge) {
-        this.angle+=anlge;
-        reAngle();
     }
 
     public void setTarget(Point p) {

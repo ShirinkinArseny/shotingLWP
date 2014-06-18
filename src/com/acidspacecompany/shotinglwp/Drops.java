@@ -1,12 +1,12 @@
 package com.acidspacecompany.shotinglwp;
 
 import com.acidspacecompany.shotinglwp.Geometry.Point;
-import com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitive;
+import com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitives.LinePrimitive;
 import com.acidspacecompany.shotinglwp.TimeFunctions.LinearTimeFunction;
 
 public class Drops extends Point {
 
-    private static Primitive drops;
+    private static LinePrimitive drops;
     private LinearTimeFunction tf;
     private LinearTimeFunction alpha;
     private float angle;
@@ -32,7 +32,7 @@ public class Drops extends Point {
             angle+=deltaAngle;
         }
 
-        drops=new Primitive(vertexes, 0.4f, 0, 0, 1, 1.3f);
+        drops=new LinePrimitive(vertexes, 0.4f, 0, 0, 0, 1.3f);
     }
 
     public boolean isNeedable(){
