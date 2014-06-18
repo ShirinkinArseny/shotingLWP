@@ -5,7 +5,7 @@ public class Utils {
     public static final float epsilon = 0.0001f;
 
     //check lines p1p2 and line p3p4
-    public static Point getIntersection(Point p1, Point p2, Point p3, Point p4) {
+    public static Point getSegmentsIntersection(Point p1, Point p2, Point p3, Point p4) {
         float a1 = p2.y - p1.y;
         float a2 = p4.y - p3.y;
         float b1 = p1.x - p2.x;
@@ -43,7 +43,8 @@ public class Utils {
         float a = ptOnLine1.y - ptOnLine2.y;
         float b = ptOnLine2.x - ptOnLine1.x;
         float c = ptOnLine1.x * ptOnLine2.y - ptOnLine2.x * ptOnLine1.y;
-        double result = Math.pow(a * from.x + b * from.y + c, 2) / (a * a + b * b);
+        float midRes=a * from.x + b * from.y + c;
+        double result = midRes*midRes / (a * a + b * b);
         if (Math.abs(result) <= epsilon)
             return 0;
         else return result;
@@ -59,7 +60,6 @@ public class Utils {
             return pl1.getNormal().setLength(1);
         }
         return new Point((pl1.x+pl2.x)/2, (pl1.y+pl2.y)/2).setLength(1);
-
     }
 
     public static Point getNormal(Point p1, Point p2) {
@@ -69,11 +69,12 @@ public class Utils {
     }
 
     //p2p1 and p2p3 - rays
-    public static double getAngle(Point p1, Point p2, Point p3) {
+    public static double getCos(Point p1, Point p2, Point p3) {
         float x1 = p1.x - p2.x;
         float x2 = p3.x - p2.x;
         float y1 = p1.y - p2.y;
         float y2 = p3.y - p2.y;
         return (x1 * x2 + y1 * y2) / Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2));
     }
+
 }

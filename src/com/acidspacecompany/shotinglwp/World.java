@@ -1,6 +1,5 @@
 package com.acidspacecompany.shotinglwp;
 
-import android.util.Log;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 
@@ -16,10 +15,18 @@ public class World {
 
     private boolean active = true;//is working
     private long lastTime;
-    private LinkedList<Man> men=new LinkedList<>();
-    private LinkedList<Bullet> bulls=new LinkedList<>();
-    private LinkedList<Drops> drops=new LinkedList<>();
+    private static LinkedList<Man> men=new LinkedList<>();
+    private static LinkedList<Bullet> bulls=new LinkedList<>();
+    private static LinkedList<Drops> drops=new LinkedList<>();
     private static final Random rnd=new Random();
+
+    public static void shot(float x, float y, float angle) {
+        bulls.add(new Bullet(x, y, (float) (x + Math.cos(angle) * 10), (float) (y + Math.sin(angle) * 10), 500));
+    }
+
+    public static void drop(Bullet b) {
+        drops.add(new Drops(b.getEnd().getX(), b.getEnd().getY(), b.getAngle(), 60f, 0.2f));
+    }
 
     public World() {
         for (int i=0; i<100; i++)
@@ -67,20 +74,23 @@ public class World {
         }
     }
 
-    private void checkManAndBulletsForIntersection(float dt) {
+    private void updateBullets(float dt) {
         for(Bullet b: bulls) {
             b.update(dt);
+        }
+    }
+
+    private void checkManAndBulletsForIntersection() {
+        for(Bullet b: bulls) {
+            if (b.getStart().getX()<0 || b.getStart().getX()>displayWidth || b.getStart().getY()<0 || b.getStart().getY()>displayHeight)
+                b.destroy();
+            else
             for(Man m: men) {
                 if (m.getIsIntersect(b)) {
-                    ///
                     b.destroy();
-                    Log.i("LOL", String.valueOf(b.getAngle()));
-                    drops.add(new Drops(m.getX(), m.getY(), b.getAngle(), 60f, 0.2f));
-                    ///
+                    drop(b);
+                    break;
                 }
-                else
-                if (b.getStart().getX()<0 || b.getStart().getX()>displayWidth || b.getStart().getY()<0 || b.getStart().getY()>displayHeight)
-                    b.destroy();
             }
         }
     }
@@ -107,19 +117,18 @@ public class World {
         }
     }
 
+    private float angle=0;
     private void spawnNewUnits() {
-        if (rnd.nextInt(10)==0) {
-            float x=400;
-            float y=240;
-            double angle=Math.PI*2*rnd.nextFloat();
-
-            bulls.add(new Bullet(x, y, (float) (x + Math.cos(angle) * 10), (float) (y + Math.sin(angle) * 10), 500));
+        if (rnd.nextInt(3)==0) {
+            shot(400, 240, angle);
+        angle+=0.05f;
         }
     }
 
     public void update(float dt) {
         updateMen(dt);
-        checkManAndBulletsForIntersection(dt);
+        updateBullets(dt);
+        checkManAndBulletsForIntersection();
         removeUnusedBullets();
         updateDrops(dt);
         removeUnusedDrops();

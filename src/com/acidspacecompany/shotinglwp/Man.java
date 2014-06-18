@@ -62,7 +62,15 @@ public class Man extends Point{
     }
 
     public boolean getIsIntersect(Segment s) {
-        return widthPow2>= getSquaredDistanceToSegment(s);
+        if (widthPow2 < s.getSquaredLengthToLine(this)) return false;
+
+        if (s.getAngleInStartIsAcute(this))
+        return widthPow2 >=s.getStart().getSquaredDistanceToPoint(this);
+
+        if (s.getAngleInEndIsAcute(this))
+        return widthPow2 >=s.getEnd().getSquaredDistanceToPoint(this);
+
+        return true;
     }
 
     public void move(float dt) {
@@ -73,11 +81,9 @@ public class Man extends Point{
 
     public Man(float x, float y, float w, float speed) {
         super(x, y);
-        target=this;
         width=w;
         widthPow2=w*w;
         this.speed=speed;
-        angle=0;
-        reAngle();
+        setTarget(new Point(400, 240));
     }
 }

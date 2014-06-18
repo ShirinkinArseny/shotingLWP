@@ -8,20 +8,20 @@ public class Segment {
     protected float cos;
     protected float sin;
     private float angle;
+    private float dx, dy, sXeY_eXsY;//for
 
-    public void setStart(Point p) {
-        start = p;
-        length= (float) start.getDistanceToPoint(end);
-    }
-
-    public void setEnd(Point p) {
-        end = p;
-        length= (float) start.getDistanceToPoint(end);
+    public double getSquaredLengthToLine(Point from) {
+        float midRes=-dy * from.x + dx * from.y + sXeY_eXsY;
+        double result = midRes*midRes / length;
+        if (Math.abs(result) <= Utils.epsilon)
+            return 0;
+        else return result;
     }
 
     public void move(float dx, float dy) {
         start.move(dx, dy);
         end.move(dx, dy);
+        sXeY_eXsY=start.getX() * end.getY() - end.getX() * start.getY();
     }
 
     public Point getStart() {
@@ -40,13 +40,8 @@ public class Segment {
         return new Point(start.getX()+cos*prop, start.getY()+sin*prop);
     }
 
-    public Segment(Point start, Point end) {
-        this.start = start;
-        this.end = end;
-    }
-
     public Point getIntersection(Segment s) {
-        return Utils.getIntersection(start, end, s.start, s.end);
+        return Utils.getSegmentsIntersection(start, end, s.start, s.end);
     }
 
     public Segment(float x1, float y1, float x2, float y2) {
@@ -56,9 +51,31 @@ public class Segment {
         sin=(y2-y1)/length;
         cos=(x2-x1)/length;
         angle= (float) Math.atan2(y2-y1, x2-x1);
+        dx=x2-x1;
+        dy=y2-y1;
+        sXeY_eXsY=x1 * y2 - x2 * y1;
     }
 
     public float getAngle() {
         return angle;
+    }
+
+    public float getDx() {
+        return dx;
+    }
+
+    public float getDy() {
+        return dy;
+    }
+
+
+    //p2p1 and p2p3 - rays, dx, dy - diffs between p3 and p2
+    public boolean getAngleInStartIsAcute(Point p1) {
+        return (p1.x - start.x) * dx + (p1.y - start.y) * dy>0;
+    }
+
+    //p2p1 and p2p3 - rays, dx, dy - diffs between p3 and p2
+    public boolean getAngleInEndIsAcute(Point p1) {
+        return (p1.x - end.x) * dx + (p1.y - end.y) * dy<0;
     }
 }

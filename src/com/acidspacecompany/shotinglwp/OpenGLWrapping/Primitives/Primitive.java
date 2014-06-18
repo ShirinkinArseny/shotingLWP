@@ -1,6 +1,5 @@
 package com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitives;
 
-import android.opengl.GLES20;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 
 public class Primitive {

@@ -54,10 +54,10 @@ public class Point {
     private static final double cosRightAngle=Math.PI/2;
 
     public double getSquaredDistanceToSegment(Segment s) {
-        double angle1=Utils.getAngle(this, s.getStart(), s.getEnd());
+        double angle1=Utils.getCos(this, s.getStart(), s.getEnd());
         if (angle1>0) return s.getStart().getSquaredDistanceToPoint(this);
 
-        double angle2=Utils.getAngle(this, s.getEnd(), s.getStart());
+        double angle2=Utils.getCos(this, s.getEnd(), s.getStart());
         if (angle2>0) return s.getEnd().getSquaredDistanceToPoint(this);
 
         return Utils.getSquaredLengthToLine(this, s.getStart(), s.getEnd());
