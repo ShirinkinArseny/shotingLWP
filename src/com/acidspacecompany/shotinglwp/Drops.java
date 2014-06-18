@@ -18,7 +18,7 @@ public class Drops extends Point {
         drops.startDraw();
     }
 
-    public static void init() {
+    public static void init(float lineWidth) {
         float[] vertexes=new float[16];
 
 
@@ -32,7 +32,7 @@ public class Drops extends Point {
             angle+=deltaAngle;
         }
 
-        drops=new LinePrimitive(vertexes, 0.4f, 0, 0, 0, 1.3f);
+        drops=new LinePrimitive(vertexes, 1f, 0, 0, 0, lineWidth);
     }
 
     public boolean isNeedable(){

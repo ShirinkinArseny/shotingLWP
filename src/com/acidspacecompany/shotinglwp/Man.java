@@ -20,7 +20,7 @@ public class Man extends Point{
         round.startDraw();
     }
 
-    public static void init() {
+    public static void init(float width) {
         float[] vertexes=new float[72];
         float deltaAngle= (float) (Math.PI/8);
         float angle= 0;
@@ -40,7 +40,7 @@ public class Man extends Point{
         vertexes[70]= 1;
         vertexes[71]= 0;
 
-        round=new LinePrimitive(vertexes, 0, 0, 0, 1, 1.3f);
+        round=new LinePrimitive(vertexes, 0, 0, 0, 1, width);
     }
 
     public void draw() {
