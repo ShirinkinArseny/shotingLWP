@@ -2,7 +2,7 @@ package com.acidspacecompany.shotinglwp;
 
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.Geometry.Segment;
-import com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitive;
+import com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitives.Primitive;
 
 import java.util.LinkedList;
 
