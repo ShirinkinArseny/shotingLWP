@@ -209,10 +209,10 @@ public class Graphic {
         Matrix.multiplyMM(resultMatrix, 0, orthoMatrix, 0, resultMatrix, 0);
     }
 
-    public static void drawPrimitive(int pointsCount, float r, float g, float b, float a, float lineWidth, float xOffset, float yOffset,float scale, float angle) {
+    public static void drawPrimitive(int pointsCount, float r, float g, float b, float a, float lineWidth, float xOffset, float yOffset,float scaleX, float scaleY, float angle) {
         glLineWidth(lineWidth);
         fillColorShader.setColor(r,g,b,a);
-        createMatrix(xOffset,yOffset,scale,scale,angle);
+        createMatrix(xOffset,yOffset,scaleX,scaleY,angle);
         fillColorShader.setMatrix(resultMatrix,0);
 
         glDrawArrays(GL_LINES,0, pointsCount);
