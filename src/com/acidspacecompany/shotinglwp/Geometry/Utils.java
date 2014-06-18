@@ -74,6 +74,6 @@ public class Utils {
         float x2 = p3.x - p2.x;
         float y1 = p1.y - p2.y;
         float y2 = p3.y - p2.y;
-        return Math.acos((x1 * x2 + y1 * y2) / Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2)));
+        return (x1 * x2 + y1 * y2) / Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2));
     }
 }

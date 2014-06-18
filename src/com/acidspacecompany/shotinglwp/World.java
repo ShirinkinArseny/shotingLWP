@@ -16,6 +16,7 @@ public class World {
     }
     public void init() {
         Man.init();
+        Drops.init();
     }
 
     public void pausePainting() {

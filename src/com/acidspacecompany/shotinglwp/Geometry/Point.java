@@ -51,13 +51,15 @@ public class Point {
         return Math.sqrt(getSquaredDistanceToPoint(p));
     }
 
-    private static final double rightAngle=Math.PI/2;
+    private static final double cosRightAngle=Math.PI/2;
 
     public double getSquaredDistanceToSegment(Segment s) {
         double angle1=Utils.getAngle(this, s.getStart(), s.getEnd());
-        if (angle1>rightAngle) return s.getStart().getSquaredDistanceToPoint(this);
+        if (angle1>0) return s.getStart().getSquaredDistanceToPoint(this);
+
         double angle2=Utils.getAngle(this, s.getEnd(), s.getStart());
-        if (angle2>rightAngle) return s.getEnd().getSquaredDistanceToPoint(this);
+        if (angle2>0) return s.getEnd().getSquaredDistanceToPoint(this);
+
         return Utils.getSquaredLengthToLine(this, s.getStart(), s.getEnd());
     }
 
@@ -83,6 +85,11 @@ public class Point {
 
     public void move(Point p) {
         move(p.x, p.y);
+    }
+
+    public void setPosition(float dx, float dy) {
+        x=dx;
+        y=dy;
     }
 
     public Point(double x, double y) {

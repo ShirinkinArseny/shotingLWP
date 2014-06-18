@@ -6,9 +6,7 @@ import com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitive;
 
 import java.util.LinkedList;
 
-import static com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic.drawLine;
-
-public class Man extends Point{
+public class House extends Point{
 
     private float width;
     private float widthPow2;
@@ -17,12 +15,10 @@ public class Man extends Point{
     private float speed;
     private float cos;
     private float sin;
-    private float cosSpeed;
-    private float sinSpeed;
     private Point target;
     private static Primitive round;
 
-    public static void startDraw() {
+    public static void startDrawPrimitives() {
         round.startDraw();
     }
 
@@ -56,8 +52,6 @@ public class Man extends Point{
     private void reAngle() {
         sin= (float) Math.sin(angle);
         cos= (float) Math.cos(angle);
-        cosSpeed=cos*speed;
-        sinSpeed=sin*speed;
         angleRadian= (float) Math.toDegrees(angle);
     }
 
@@ -72,17 +66,22 @@ public class Man extends Point{
         reAngle();
     }
 
-    public boolean getIsIntersect(Segment s) {
-        return widthPow2>= getSquaredDistanceToSegment(s);
+    private boolean getIsIntersect(Segment s) {
+        return width>= getSquaredDistanceToSegment(s);
     }
 
-    public void move(float dt) {
-        float dx=dt*cosSpeed;
-        float dy=dt*sinSpeed;
-        move(dx, dy);
+    public void move(float dt, LinkedList<Segment> segms) {
+        float dx=cos*dt*speed;
+        float dy=sin*dt*speed;
+        Point m=this.add(dx, dy);
+        for (Segment s: segms) {
+            if (widthPow2 >= m.getSquaredDistanceToSegment(s))
+                return;
+        }
+        move(cos*dt*speed, sin*dt*speed);
     }
 
-    public Man(float x, float y, float w, float speed) {
+    public House(float x, float y, float w, float speed) {
         super(x, y);
         target=this;
         width=w;

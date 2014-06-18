@@ -1,7 +1,5 @@
 package com.acidspacecompany.shotinglwp.OpenGLWrapping;
 
-import android.opengl.GLES20;
-
 public class Primitive {
 
     private int bufferId;
@@ -17,6 +15,14 @@ public class Primitive {
     }
     public void draw(float x, float y, float scaleX, float scaleY, float angle) {
         Graphic.drawPrimitive(pointsNum, r,g,b,a,lineWidth,x,y,scaleX,scaleY,angle);
+    }
+
+    public void drawWithAlpha(float x, float y, float scale, float angle, float alpha) {
+        Graphic.drawPrimitive(pointsNum, r,g,b,alpha,lineWidth,x,y,scale,scale,angle);
+    }
+
+    public void draw(float x, float y, float scale, float angle) {
+        draw(x, y, scale, scale, angle);
     }
 
     public Primitive(float[] vertexes, float r,float g, float b, float a, float lineWidth) {
