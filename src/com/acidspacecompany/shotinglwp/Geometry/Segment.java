@@ -8,7 +8,16 @@ public class Segment {
     protected float cos;
     protected float sin;
     private float angle;
-    private float dx, dy, sXeY_eXsY;//for
+    private float dx, dy, sXeY_eXsY, sxsydxdy;//for
+
+    public float getD(Point point) {
+        return point.getX()* dy
+                -  point.getY()* dx + sxsydxdy;
+    }
+
+    public float getSxSyDxDy() {
+        return sxsydxdy;
+    }
 
     public double getSquaredLengthToLine(Point from) {
         float midRes=-dy * from.x + dx * from.y + sXeY_eXsY;
@@ -44,6 +53,14 @@ public class Segment {
         return Utils.getSegmentsIntersection(start, end, s.start, s.end);
     }
 
+    private boolean areDifferent(float x, float y) {
+        return x<0 && y>=0 || x>0 && y<=0;
+    }
+
+    public boolean getIsIntersects(Segment s) {
+        return areDifferent(getD(s.getStart()),  getD(s.getEnd())) &&  areDifferent(s.getD(start),  s.getD(end));
+    }
+
     public Segment(float x1, float y1, float x2, float y2) {
         start = new Point(x1, y1);
         end = new Point(x2, y2);
@@ -54,6 +71,11 @@ public class Segment {
         dx=x2-x1;
         dy=y2-y1;
         sXeY_eXsY=x1 * y2 - x2 * y1;
+        sxsydxdy=y1*dx-x1*dy;
+    }
+
+    public Segment(Point p1, Point p2) {
+        this(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
 
     public float getAngle() {
@@ -68,6 +90,9 @@ public class Segment {
         return dy;
     }
 
+    public boolean getIsBetween(Point p) {
+        return getAngleInStartIsAcute(p) && getAngleInEndIsAcute(p);
+    }
 
     //p2p1 and p2p3 - rays, dx, dy - diffs between p3 and p2
     public boolean getAngleInStartIsAcute(Point p1) {

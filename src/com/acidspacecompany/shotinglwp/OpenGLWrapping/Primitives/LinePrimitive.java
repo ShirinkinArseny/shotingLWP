@@ -6,9 +6,23 @@ public class LinePrimitive extends Primitive {
     private float r,g,b,a;
     private float lineWidth;
 
+    protected void drawLooped(float x, float y, float scaleX, float scaleY, float sin, float cos)
+    {
+        Graphic.drawLineLoop();
+        Graphic.setLineWidth(lineWidth);
+        Graphic.drawPrimitive(getPointsNum(), r, g, b, a, x, y, scaleX, scaleY, sin,cos);
+    }
+
     @Override
-    public void draw(float x, float y, float scaleX, float scaleY, float angle) {
-        Graphic.drawLinePrimitive(getPointsNum(), r, g, b, a,lineWidth, x, y, scaleX, scaleY, angle);
+    public void draw(float x, float y, float scaleX, float scaleY, float sin, float cos) {
+        Graphic.drawLines();
+        Graphic.setLineWidth(lineWidth);
+        Graphic.drawPrimitive(getPointsNum(), r, g, b, a, x, y, scaleX, scaleY, sin,cos);
+    }
+
+    @Override
+    public void draw(float x, float y, float scale, float sin, float cos) {
+        draw(x, y, scale, scale, sin, cos);
     }
 
     public LinePrimitive(float[] vertexes, float r, float g, float b, float a, float lineWidth) {
@@ -17,7 +31,9 @@ public class LinePrimitive extends Primitive {
         this.lineWidth = lineWidth;
     }
 
-    public void drawWithAlpha(float x, float y, float scale, float angle, float alpha) {
-        Graphic.drawLinePrimitive(getPointsNum(), r, g, b, alpha,lineWidth, x, y, scale, scale, angle);
+    public void drawWithAlpha(float x, float y, float scale, float sin, float cos, float alpha) {
+        Graphic.drawLines();
+        Graphic.setLineWidth(lineWidth);
+        Graphic.drawPrimitive(getPointsNum(), r, g, b, alpha, x, y, scale, scale, sin, cos);
     }
 }

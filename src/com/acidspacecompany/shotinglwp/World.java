@@ -1,6 +1,7 @@
 package com.acidspacecompany.shotinglwp;
 
 import com.acidspacecompany.shotinglwp.Geometry.Point;
+import com.acidspacecompany.shotinglwp.Geometry.Segment;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 
 import java.util.*;
@@ -13,29 +14,68 @@ public class World {
     private static int displayWidth=800;
     private static int displayHeight=480;
 
+    private static float timer=0;
+    private static final float timerLimit=0.5f;
+
     private boolean active = true;//is working
     private long lastTime;
     private static LinkedList<Man> men=new LinkedList<>();
+    private static LinkedList<Man>[] teamedMen=new LinkedList[]{new LinkedList(), new LinkedList()};
     private static LinkedList<Bullet> bulls=new LinkedList<>();
     private static LinkedList<Drops> drops=new LinkedList<>();
+    private static LinkedList<Man>[] visibleMen=new LinkedList[]{new LinkedList(), new LinkedList()};
     private static final Random rnd=new Random();
 
     public static void shot(float x, float y, float angle) {
-        bulls.add(new Bullet(x, y, (float) (x + Math.cos(angle) * 10), (float) (y + Math.sin(angle) * 10), 500));
+        Bullet b=new Bullet(x, y, (float) (x + Math.cos(angle) * 10), (float) (y + Math.sin(angle) * 10), 500);
+        bulls.add(b);
+        drop(b, false);
     }
 
-    public static void drop(Bullet b) {
+    private static float Pi= (float) Math.PI;
+    public static void drop(Bullet b, boolean reverse) {
+        if (reverse)
+            drops.add(new Drops(b.getEnd().getX(), b.getEnd().getY(), b.getAngle()+Pi, 60f, 0.2f));
+            else
         drops.add(new Drops(b.getEnd().getX(), b.getEnd().getY(), b.getAngle(), 60f, 0.2f));
+    }
+
+    private void addMan(Man m, int team) {
+        men.add(m);
+        teamedMen[team].add(m);
     }
 
     public World() {
         for (int i=0; i<100; i++)
-            men.add(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), 5, 50));
+            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), 5, 50), i%2);
+
+        Barriers.init(displayWidth, displayHeight);
+        for (int i=0; i<20; i++)
+            Barriers.addBarrier(new Building(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), 80, 40, (float) (rnd.nextFloat() * Math.PI * 2)));
+        Barriers.finishAddingBarriers();
+
     }
 
     public void init() {
+
+        //Real init
         Man.init(lineWidth);
         Drops.init(lineWidth);
+        Building.init(lineWidth);
+    }
+
+    public void drawDebugSegmentation() {
+        Graphic.startDrawLines(0, 0, 0, 1, lineWidth);
+        for (int i=0; i<20; i++)
+            for (int j=0; j<20; j++)
+            {
+                Graphic.drawLine(i*Barriers.getBlockWidth(), (j-0.25f)*Barriers.getBlockHeight(),
+                        i*Barriers.getBlockWidth(), (j+0.25f)*Barriers.getBlockHeight());
+                Graphic.drawLine((i-0.25f)*Barriers.getBlockWidth(), j*Barriers.getBlockHeight(),
+                        (i+0.25f)*Barriers.getBlockWidth(), j*Barriers.getBlockHeight());
+
+            }
+        Graphic.endDrawLines();
     }
 
     public void pausePainting() {
@@ -66,6 +106,19 @@ public class World {
         Graphic.resize(width, height);
     }
 
+    //Пузырёк в продакшоне :3
+    private void sortPeople() {
+        for(int i = 0; i < men.size(); i++) {
+            boolean swapped=false;
+            for (int j = 0; j < men.size()-1; j++)
+                if (men.get(j).getX() > men.get(j + 1).getX()) {
+                    Collections.swap(men, j, j+1);
+                    swapped=true;
+                }
+            if (!swapped) break;
+        }
+    }
+
     private void updateMen(float dt){
         for(Man m: men) {
             m.move(dt);
@@ -74,9 +127,57 @@ public class World {
         }
     }
 
+    private void removeUnusedMen(){
+        for(int i=0; i<men.size(); i++) {
+            if (!men.get(i).getIsNeeded())
+                men.remove(i);
+        }
+
+        for (int j=0; j<2; j++)
+        for(int i=0; i<teamedMen[j].size(); i++) {
+            if (!teamedMen[j].get(i).getIsNeeded())
+                teamedMen[j].remove(i);
+        }
+
+    }
+
     private void updateBullets(float dt) {
         for(Bullet b: bulls) {
             b.update(dt);
+        }
+    }
+
+    private int getNearestMenIndex(float x) {
+        int leftIndex=0;
+        int rightIndex=men.size()-1;
+        while (rightIndex-leftIndex>1) {
+            int midIndex=(leftIndex+rightIndex)/2;
+            if (men.get(midIndex).getX()<x)
+                leftIndex=midIndex;
+            else rightIndex=midIndex;
+        }
+        return leftIndex;
+    }
+
+    private void checkBuildingsAndBulletsForIntersection() {
+        for(Bullet b: bulls) {
+            for (Building bu: Barriers.getPotentialBarriers(b.getStart().getX(), b.getStart().getY())) {
+                 if (bu.contains(b.getStart()))
+                 {
+                     b.destroy();
+                     drop(b, true);
+                     break;
+                 }
+            }
+
+            for (Building bu: Barriers.getPotentialBarriers(b.getEnd().getX(), b.getEnd().getY())) {
+                if (bu.contains(b.getEnd()))
+                {
+                    b.destroy();
+                    drop(b, true);
+                    break;
+                }
+            }
         }
     }
 
@@ -84,12 +185,29 @@ public class World {
         for(Bullet b: bulls) {
             if (b.getStart().getX()<0 || b.getStart().getX()>displayWidth || b.getStart().getY()<0 || b.getStart().getY()>displayHeight)
                 b.destroy();
-            else
-            for(Man m: men) {
-                if (m.getIsIntersect(b)) {
-                    b.destroy();
-                    drop(b);
-                    break;
+            else {
+                int index= getNearestMenIndex(b.getStart().getX());
+                int target= getNearestMenIndex(b.getEnd().getX());
+
+                if (b.getDx()>0) {
+                    index++;
+                    target=Math.min(target+1, men.size()-1);
+                    for (int i=index; i<target; i++){
+                        if (men.get(i).getIsIntersect(b)) {
+                            b.destroy();
+                            drop(b, false);
+                            break;
+                        }
+                    }
+                }
+                else  {
+                    for (int i=index; i>=target; i--){
+                        if (men.get(i).getIsIntersect(b)) {
+                            b.destroy();
+                            drop(b, false);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -125,14 +243,82 @@ public class World {
         }
     }
 
+
+    private int getNearestHouseIndex(float x) {
+        int leftIndex=0;
+        int rightIndex=Barriers.getBarriers().size()-1;
+        while (rightIndex-leftIndex>1) {
+            int midIndex=(leftIndex+rightIndex)/2;
+            if (Barriers.getBarriers().get(midIndex).getCentre().getX()<x)
+                leftIndex=midIndex;
+            else rightIndex=midIndex;
+        }
+        return leftIndex;
+    }
+
+    private boolean getNotOptimisedVisibility(Man m1, Man m2) {
+        Segment s=new Segment(m1, m2);
+
+        int index= getNearestHouseIndex(m1.getX());
+        int target= getNearestHouseIndex(m2.getX());
+
+        if (s.getDx()>0) {
+            index++;
+            target=Math.min(target+1, men.size()-1);
+            for (int i=index; i<target; i++){
+                if (Barriers.getBarriers().get(i).getIsIntersect(s)) return true;
+            }
+        }
+        else  {
+            for (int i=index; i>=target; i--){
+                if (Barriers.getBarriers().get(i).getIsIntersect(s)) return true;
+            }
+        }
+        return true;
+    }
+
+    private boolean getIsVisible(Man m1, Man m2) {
+        switch (Barriers.getConnected(m1.getBlockX(), m1.getBlockY(), m2.getBlockX(), m2.getBlockY())) {
+            case connected: return true;
+            case disconnected: return getNotOptimisedVisibility(m1, m2);//todo
+            case partiallyConnected:  return false;
+        }
+        return false;
+    }
+
+    private void updateVisibility() {
+        for (int i=0; i<2; i++) {
+            int opp=i==0?1:0;
+            visibleMen[i].clear();
+            for (Man m1: teamedMen[i])
+                for (Man m2: teamedMen[opp])
+                    if (getIsVisible(m1, m2)) {
+                        visibleMen[i].add(m1);
+                        break;
+                    }
+        }
+    }
+
+    public void updateAI(float dt) {
+        timer+=dt;
+        if (timer>timerLimit) {
+            timer-=timerLimit;
+            updateVisibility();
+        }
+    }
+
     public void update(float dt) {
         updateMen(dt);
+        removeUnusedMen();
+        sortPeople();
         updateBullets(dt);
         checkManAndBulletsForIntersection();
+        checkBuildingsAndBulletsForIntersection();
         removeUnusedBullets();
         updateDrops(dt);
         removeUnusedDrops();
         spawnNewUnits();
+        updateAI(dt);
     }
 
     private void drawMenLayer() {
@@ -155,11 +341,22 @@ public class World {
         Graphic.endDrawLines();
     }
 
+    private void drawHousesLayer() {
+        Building.startDrawBase();
+        for(Building m: Barriers.getBarriers())
+            m.drawBase();
+        Building.startDrawRoof();
+        for(Building m: Barriers.getBarriers())
+            m.drawRoof();
+    }
+
     private void draw() {
         startDraw();
+        //drawDebugSegmentation();
         drawMenLayer();
         drawDropsLayer();
         drawBulletsLayer();
+        drawHousesLayer();
         end();
     }
 }

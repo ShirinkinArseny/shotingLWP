@@ -74,6 +74,16 @@ public class Point {
         y = (float) newY + center.y;
     }
 
+    public Point getRotated(float angle, Point center) {
+
+        float ax = x - center.x;
+        float ay = y - center.y;
+
+        double newX = ax * Math.cos(angle) - ay * Math.sin(angle);
+        double newY = ax * Math.sin(angle) + ay * Math.cos(angle);
+        return new Point(newX + center.x, newY + center.y);
+    }
+
     public Point multiply(double scalar) {
         return new Point(x * scalar, y * scalar);
     }

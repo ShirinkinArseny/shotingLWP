@@ -200,44 +200,39 @@ public class Graphic {
     }
 
     private static float[] offsetMatrix = new float[16], scaleMatrix = new float[16], rotateMatrix = new float[16], resultMatrix = new float[16];
-    private static void createMatrix(float x, float y, float scaleX, float scaleY, float angle) {
+    private static void createMatrix(float x, float y, float scaleX, float scaleY, float sin, float cos) {
         Matrix.setIdentityM(offsetMatrix, 0);
         Matrix.setIdentityM(scaleMatrix, 0);
-        Matrix.setIdentityM(rotateMatrix,0);
         Matrix.setIdentityM(resultMatrix, 0);
 
         Matrix.translateM(offsetMatrix, 0, x,y,0);
         Matrix.scaleM(scaleMatrix,0,scaleX, scaleY, 1);
-        Matrix.rotateM(rotateMatrix, 0, angle,0,0,1);
+        rotateMatrix = MatrixCreator.rotateM(sin,cos);
         Matrix.multiplyMM(resultMatrix, 0, rotateMatrix, 0, scaleMatrix, 0);
         Matrix.multiplyMM(resultMatrix, 0, offsetMatrix, 0, resultMatrix, 0);
         Matrix.multiplyMM(resultMatrix, 0, orthoMatrix, 0, resultMatrix, 0);
     }
 
-    public static void drawLinePrimitive(int pointsCount,
-                                         float r, float g, float b, float a,
-                                         float lineWidth,
-                                         float xOffset, float yOffset,
-                                         float scaleX, float scaleY,
-                                         float angle) {
-        glLineWidth(lineWidth);
-        fillColorShader.setColor(r,g,b,a);
-        createMatrix(xOffset,yOffset,scaleX,scaleY,angle);
-        fillColorShader.setMatrix(resultMatrix,0);
-
-        glDrawArrays(GL_LINES,0, pointsCount);
+    public static void setLineWidth(float width) {
+        glLineWidth(width);
     }
 
-    public static void drawFillPrimitive(int pointsCount,
+    private static int DRAW_MODE = GL_LINES;
+
+    public static void drawLines() {DRAW_MODE = GL_LINES;}
+    public static void drawLineLoop() {DRAW_MODE = GL_LINE_LOOP;}
+    public static void drawTriangleFan() {DRAW_MODE = GL_TRIANGLE_FAN;}
+
+    public static void drawPrimitive(int pointsCount,
                                          float r, float g, float b, float a,
                                          float xOffset, float yOffset,
                                          float scaleX, float scaleY,
-                                         float angle) {
+                                         float sin, float cos) {
         fillColorShader.setColor(r,g,b,a);
-        createMatrix(xOffset,yOffset,scaleX,scaleY,angle);
+        createMatrix(xOffset,yOffset,scaleX,scaleY,sin,cos);
         fillColorShader.setMatrix(resultMatrix,0);
 
-        glDrawArrays(GL_TRIANGLE_FAN,0, pointsCount);
+        glDrawArrays(DRAW_MODE,0, pointsCount);
     }
 
 

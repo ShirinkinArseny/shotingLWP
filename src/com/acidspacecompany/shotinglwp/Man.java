@@ -1,5 +1,6 @@
 package com.acidspacecompany.shotinglwp;
 
+import android.util.Log;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.Geometry.Segment;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Primitives.LinePrimitive;
@@ -9,11 +10,14 @@ public class Man extends Point{
     private float width;
     private float widthPow2;
     private float angle;
-    private float angleRadian;
     private float speed;
+    private float cos;
+    private float sin;
     private float cosSpeed;
     private float sinSpeed;
-    private Point target;
+    private float health=1f;
+    private int blockX=0;
+    private int blockY=0;
     private static LinePrimitive round;
 
     public static void startDraw() {
@@ -43,21 +47,27 @@ public class Man extends Point{
         round=new LinePrimitive(vertexes, 0, 0, 0, 1, width);
     }
 
+    public void damage(float damage) {
+        health-=damage;
+    }
+
+    public boolean getIsNeeded() {
+        return health>0;
+    }
+
     public void draw() {
-        round.draw(getX(), getY(), width, angleRadian);
+        round.draw(getX(), getY(), width, sin, cos);
     }
 
     private void reAngle() {
-        float sin = (float) Math.sin(angle);
-        float cos = (float) Math.cos(angle);
+        sin = (float) Math.sin(angle);
+        cos = (float) Math.cos(angle);
         cosSpeed= cos *speed;
         sinSpeed= sin *speed;
-        angleRadian= (float) Math.toDegrees(angle);
     }
 
     public void setTarget(Point p) {
-        target=p;
-        angle= (float) Math.atan2(target.getY()-getY(), target.getX()-getX());
+        angle= (float) Math.atan2(p.getY()-getY(), p.getX()-getX());
         reAngle();
     }
 
@@ -73,10 +83,27 @@ public class Man extends Point{
         return true;
     }
 
+    public int getBlockX() {
+        return blockX;
+    }
+
+    public int getBlockY() {
+        return blockY;
+    }
+
     public void move(float dt) {
         float dx=dt*cosSpeed;
         float dy=dt*sinSpeed;
         move(dx, dy);
+        blockX=Barriers.getXBlock(getX());
+        blockY=Barriers.getYBlock(getY());
+        for (Building b: Barriers.getPotentialBarriers(blockX, blockY)) {
+            if (b.contains(this))
+            {
+                move(-dx, -dy);
+                return;
+            }
+        }
     }
 
     public Man(float x, float y, float w, float speed) {

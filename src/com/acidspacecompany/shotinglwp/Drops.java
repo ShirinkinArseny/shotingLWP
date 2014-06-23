@@ -9,7 +9,8 @@ public class Drops extends Point {
     private static LinePrimitive drops;
     private LinearTimeFunction tf;
     private LinearTimeFunction alpha;
-    private float angle;
+    private float sin;
+    private float cos;
     private float time=0;
     private float length;
 
@@ -45,14 +46,15 @@ public class Drops extends Point {
     }
 
     public void draw() {
-        drops.drawWithAlpha(getX(), getY(), tf.getValue(), angle, alpha.getValue());
+        drops.drawWithAlpha(getX(), getY(), tf.getValue(), sin, cos, alpha.getValue());
     }
 
     public Drops(float x, float y, float angle, float size, float length) {
         super(x, y);
-        this.angle= (float) Math.toDegrees(angle);
         this.length=length;
         tf=new LinearTimeFunction(length, 0, size);
         alpha=new LinearTimeFunction(length, 1, 0);
+        sin= (float) Math.sin(angle);
+        cos= (float) Math.cos(angle);
     }
 }

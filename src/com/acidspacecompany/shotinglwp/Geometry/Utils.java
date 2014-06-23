@@ -5,6 +5,28 @@ public class Utils {
     public static final float epsilon = 0.0001f;
 
     //check lines p1p2 and line p3p4
+    public static boolean getAreSegmentsIntersect(Point p1, Point p2, Point p3, Point p4) {
+        float a1 = p2.y - p1.y;
+        float a2 = p4.y - p3.y;
+        float b1 = p1.x - p2.x;
+        float b2 = p3.x - p4.x;
+        float det = a1 * b2 - a2 * b1;
+        if (Math.abs(det) <= Utils.epsilon) return false;
+        float c1 = p1.y * b1 + p1.x * a1;
+        float c2 = p3.y * b2 + p3.x * a2;
+        float det1 = c1 * b2 - c2 * b1;
+        float det2 = a1 * c2 - a2 * c1;
+        float x = det1 / det;
+        float y = det2 / det;
+        boolean inX12 = Math.min(p1.x, p2.x) <= x && x <= Math.max(p1.x, p2.x);
+        boolean inX34 = Math.min(p3.x, p4.x) <= x && x <= Math.max(p3.x, p4.x);
+        boolean inY12 = Math.min(p1.y, p2.y) <= y && y <= Math.max(p1.y, p2.y);
+        boolean inY34 = Math.min(p3.y, p4.y) <= y && y <= Math.max(p3.y, p4.y);
+        if (inX12 && inX34 && inY12 && inY34) return false;
+        return true;
+    }
+
+    //check lines p1p2 and line p3p4
     public static Point getSegmentsIntersection(Point p1, Point p2, Point p3, Point p4) {
         float a1 = p2.y - p1.y;
         float a2 = p4.y - p3.y;
