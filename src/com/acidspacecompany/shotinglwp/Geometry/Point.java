@@ -21,10 +21,6 @@ public class Point {
         return new Point(x + dx, y + dy);
     }
 
-    public Point negate() {
-        return new Point(-x, -y);
-    }
-
     public double length() {
         return Math.sqrt(x*x+y*y);
     }
@@ -51,27 +47,17 @@ public class Point {
         return Math.sqrt(getSquaredDistanceToPoint(p));
     }
 
-    private static final double cosRightAngle=Math.PI/2;
+    public void rotate(float angle, float x, float y) {
 
-    public double getSquaredDistanceToSegment(Segment s) {
-        double angle1=Utils.getCos(this, s.getStart(), s.getEnd());
-        if (angle1>0) return s.getStart().getSquaredDistanceToPoint(this);
+        float ax = this.x - x;
+        float ay = this.y - y;
 
-        double angle2=Utils.getCos(this, s.getEnd(), s.getStart());
-        if (angle2>0) return s.getEnd().getSquaredDistanceToPoint(this);
-
-        return Utils.getSquaredLengthToLine(this, s.getStart(), s.getEnd());
+        this.x=(float) (ax * Math.cos(angle) - ay * Math.sin(angle)) + x;
+        this.y=(float) (ax * Math.sin(angle) + ay * Math.cos(angle)) + y;
     }
 
     public void rotate(float angle, Point center) {
-
-        float ax = x - center.x;
-        float ay = y - center.y;
-
-        double newX = ax * Math.cos(angle) - ay * Math.sin(angle);
-        double newY = ax * Math.sin(angle) + ay * Math.cos(angle);
-        x = (float) newX + center.x;
-        y = (float) newY + center.y;
+        rotate(angle, center.x, center.y);
     }
 
     public Point getRotated(float angle, Point center) {

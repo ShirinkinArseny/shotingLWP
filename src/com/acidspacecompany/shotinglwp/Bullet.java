@@ -23,8 +23,8 @@ public class Bullet extends Segment {
         move(dxt, dyt);
     }
 
-    public void draw() {
-        Graphic.drawLine(getStart(), getEnd());
+    public void draw() {/*                      TODO
+        Graphic.drawLine(getStart(), getEnd());*/
     }
 
     public Bullet(float x1, float y1, float x2, float y2, float speed) {

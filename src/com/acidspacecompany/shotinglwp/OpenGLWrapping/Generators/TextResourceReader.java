@@ -1,4 +1,4 @@
-package com.acidspacecompany.shotinglwp.OpenGLWrapping;
+package com.acidspacecompany.shotinglwp.OpenGLWrapping.Generators;
 
 import android.content.Context;
 import android.content.res.Resources;

@@ -3,8 +3,8 @@ package com.acidspacecompany.shotinglwp.OpenGLWrapping;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.service.wallpaper.WallpaperService;
-import android.util.Log;
 import android.view.SurfaceHolder;
+import com.acidspacecompany.shotinglwp.BicycleDebugger;
 
 public abstract class OpenGLES20LiveWallpaperService extends WallpaperService {
     public class GLEngine extends Engine {
@@ -41,7 +41,7 @@ public abstract class OpenGLES20LiveWallpaperService extends WallpaperService {
             public void onResume() {
                 super.onResume();
                 if (renderer == null)
-                    Log.e("GLSurfaceView", "Renderer hasn't been set up.");
+                    BicycleDebugger.e("GLSurfaceView", "Renderer hasn't been set up.");
                 renderer.onResume();
             }
 

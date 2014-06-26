@@ -28,7 +28,7 @@ public class LiveWallpaperService extends OpenGLES20LiveWallpaperService {
 
         @Override
         public void onCreate(Context context) {
-            world = new World();
+            world = new World(context);
         }
 
         @Override

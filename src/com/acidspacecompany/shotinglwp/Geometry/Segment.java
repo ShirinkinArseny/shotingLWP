@@ -9,22 +9,19 @@ public class Segment {
     protected float sin;
     private float angle;
     private float dx, dy, sXeY_eXsY, sxsydxdy;//for
+    private float minx;
+    private float miny;
+    private float maxx;
+    private float maxy;
 
-    public float getD(Point point) {
+    public float getSide(Point point) {
         return point.getX()* dy
                 -  point.getY()* dx + sxsydxdy;
     }
 
-    public float getSxSyDxDy() {
-        return sxsydxdy;
-    }
-
     public double getSquaredLengthToLine(Point from) {
         float midRes=-dy * from.x + dx * from.y + sXeY_eXsY;
-        double result = midRes*midRes / length;
-        if (Math.abs(result) <= Utils.epsilon)
-            return 0;
-        else return result;
+        return midRes*midRes / length;
     }
 
     public void move(float dx, float dy) {
@@ -57,8 +54,8 @@ public class Segment {
         return x<0 && y>=0 || x>0 && y<=0;
     }
 
-    public boolean getIsIntersects(Segment s) {
-        return areDifferent(getD(s.getStart()),  getD(s.getEnd())) &&  areDifferent(s.getD(start),  s.getD(end));
+    public boolean getIntersects(Segment s) {
+        return areDifferent(getSide(s.getStart()),  getSide(s.getEnd())) &&  areDifferent(s.getSide(start),  s.getSide(end));
     }
 
     public Segment(float x1, float y1, float x2, float y2) {
@@ -72,6 +69,10 @@ public class Segment {
         dy=y2-y1;
         sXeY_eXsY=x1 * y2 - x2 * y1;
         sxsydxdy=y1*dx-x1*dy;
+        minx=Math.min(x1, x2);
+        miny=Math.min(y1, y2);
+        maxx=Math.max(x1, x2);
+        maxy=Math.max(y1, y2);
     }
 
     public Segment(Point p1, Point p2) {

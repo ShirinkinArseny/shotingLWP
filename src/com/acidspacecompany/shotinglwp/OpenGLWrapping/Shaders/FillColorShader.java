@@ -1,12 +1,13 @@
-package com.acidspacecompany.shotinglwp.OpenGLWrapping;
+package com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders;
 
 import android.content.Context;
 import android.opengl.GLES20;
+import com.acidspacecompany.shotinglwp.OpenGLWrapping.Generators.ShaderGenerator;
 import com.acidspacecompany.shotinglwp.R;
 
 import java.nio.FloatBuffer;
 
-public class FillColorShader {
+public class FillColorShader implements Shader {
 
     private int programId;
     public void use() {

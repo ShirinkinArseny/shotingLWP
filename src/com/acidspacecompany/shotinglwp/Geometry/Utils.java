@@ -66,10 +66,7 @@ public class Utils {
         float b = ptOnLine2.x - ptOnLine1.x;
         float c = ptOnLine1.x * ptOnLine2.y - ptOnLine2.x * ptOnLine1.y;
         float midRes=a * from.x + b * from.y + c;
-        double result = midRes*midRes / (a * a + b * b);
-        if (Math.abs(result) <= epsilon)
-            return 0;
-        else return result;
+        return midRes*midRes / (a * a + b * b);
     }
 
     //p1p2p3-angle

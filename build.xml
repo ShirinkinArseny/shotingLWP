@@ -2,7 +2,7 @@
 <project name="myapp" default="help">
 
     <!-- The local.properties file is created and updated by the 'android' tool.
-         It contains the path to the SDK. It should *NOT* be checked into
+         It containsByAngleSummary the path to the SDK. It should *NOT* be checked into
          Version Control Systems. -->
     <property file="local.properties"/>
 
@@ -40,7 +40,7 @@
     <!-- The project.properties file is created and updated by the 'android'
          tool, as well as ADT.
 
-         This contains project specific properties such as project target, and library
+         This containsByAngleSummary project specific properties such as project target, and library
          dependencies. Lower level build properties are stored in ant.properties
          (or in .classpath for Eclipse projects).
 
