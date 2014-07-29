@@ -10,6 +10,6 @@ uniform mat4 u_Matrix;
 
 void main()
 {
-    v_TextureCoordinates = a_TextureCoordinates;
+    v_TextureCoordinates = (a_TextureCoordinates + vec2(1.0,1.0)) * 0.5;
     gl_Position = u_Matrix * a_Position;
 }
