@@ -1,5 +1,6 @@
 package com.acidspacecompany.shotinglwp;
 
+import android.util.Log;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.Geometry.Rectangle;
 import com.acidspacecompany.shotinglwp.Geometry.Segment;
@@ -8,6 +9,7 @@ import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 public class Man extends Rectangle{
 
     private float widthPow2;
+    private float width2;
     private float angle;
     private float speed;
     private float cosSpeed;
@@ -16,6 +18,7 @@ public class Man extends Rectangle{
     private int blockX=0;
     private int blockY=0;
     private Man visibleMan;
+    private int rotateScaleMatrix;
 
     public void cleanVisibility(){
         visibleMan=null;
@@ -38,12 +41,16 @@ public class Man extends Rectangle{
     }
 
     public void draw(int id) {
-        Graphic.drawBitmap(id, this);
+        Graphic.bindBitmap(id);
+        Graphic.bindScaleMatrix(rotateScaleMatrix);
+        Graphic.drawBitmap(getX(), getY());
     }
 
     public void setTarget(Point p) {
         angle= (float) Math.atan2(p.getY()-getY(), p.getX()-getX());
-        //reAngle();            TODO
+        cosSpeed= (float) (Math.cos(angle)*speed);
+        sinSpeed= (float) (Math.sin(angle)*speed);
+        rotateScaleMatrix=Graphic.getRotateScaleMatrixID(width2, width2, (float) Math.toDegrees(angle));
     }
 
     public boolean getIsIntersect(Segment s) {
@@ -81,8 +88,15 @@ public class Man extends Rectangle{
 
     public Man(float x, float y, int w, float speed) {
         super(x, y, w, w);
+        width2=w/2;
         widthPow2=w*w;
         this.speed=speed;
+        rotateScaleMatrix=Graphic.getRotateScaleMatrixID(width2, width2, (float) Math.toDegrees(angle));
         setTarget(new Point(400, 240));
+    }
+
+    public void reMatrix() {
+        Graphic.cleanScaleMatrixID(rotateScaleMatrix);
+        rotateScaleMatrix=Graphic.getRotateScaleMatrixID(width2, width2, (float) Math.toDegrees(angle));
     }
 }

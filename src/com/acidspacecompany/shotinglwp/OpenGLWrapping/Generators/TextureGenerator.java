@@ -1,7 +1,6 @@
 package com.acidspacecompany.shotinglwp.OpenGLWrapping.Generators;
 
 import android.graphics.Bitmap;
-import com.acidspacecompany.shotinglwp.BicycleDebugger;
 
 import static android.opengl.GLES20.*;
 import static android.opengl.GLUtils.texImage2D;
@@ -14,7 +13,7 @@ public class TextureGenerator {
         final int[] textureObjectIds = new int[1];
         glGenTextures(1, textureObjectIds, 0);
         if (textureObjectIds[0]==0) {
-            BicycleDebugger.w(TAG, "Could not generate new a new OpenGL texture object.");
+            //todo: BicycleDebugger.w(TAG, "Could not generate new a new OpenGL texture object.");
             return 0;
         }
 
@@ -41,9 +40,7 @@ public class TextureGenerator {
         //Генерирем Mipmap
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        //Битмап не нужен больше ни кому
         bitmap.recycle();
-
 
         //Сбрасываем текстуру так как действия с ней пока закончились
         glBindTexture(GL_TEXTURE_2D, 0);

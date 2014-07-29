@@ -1,7 +1,6 @@
 package com.acidspacecompany.shotinglwp;
 
 import android.content.Context;
-import android.preference.PreferenceManager;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.LifecycleRenderer;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.OpenGLES20LiveWallpaperService;
@@ -49,13 +48,13 @@ public class LiveWallpaperService extends OpenGLES20LiveWallpaperService {
 
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            Graphic.init(getBaseContext());
             world.init();
+            Graphic.init(getBaseContext());
         }
 
         @Override
         public void onSurfaceChanged(GL10 gl, int width, int height) {
-            world.setSurface(width, height);
+            world.resize(width, height);
         }
 
         @Override

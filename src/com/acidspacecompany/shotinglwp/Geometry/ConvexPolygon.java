@@ -75,6 +75,11 @@ public class ConvexPolygon extends Point{
     public void rotate(float angle) {
         for (Point p: points)
             p.rotate(angle, this);
+        for (Segment p: segments)
+        {
+            p.getStart().rotate(angle, this);
+            p.getEnd().rotate(angle, this);
+        }
     }
 
     public int getPointCount() {
@@ -114,6 +119,7 @@ public class ConvexPolygon extends Point{
             s.move(dx, dy);
         for (Point p: points)
             p.move(dx, dy);
+        super.move(dx, dy);
     }
 
     public ConvexPolygon(Point[] vertexes) {

@@ -1,7 +1,6 @@
 package com.acidspacecompany.shotinglwp.OpenGLWrapping.Generators;
 
 import android.content.Context;
-import com.acidspacecompany.shotinglwp.BicycleDebugger;
 
 import static android.opengl.GLES20.*;
 
@@ -24,7 +23,7 @@ public class ShaderGenerator {
         final int shaderObjectId = glCreateShader(type);
 
         if (shaderObjectId == 0) {
-            BicycleDebugger.w(TAG, "Could not create shader.");
+            //todo: BicycleDebugger.w(TAG, "Could not create shader.");
         }
         glShaderSource(shaderObjectId, shaderCode);
         glCompileShader(shaderObjectId);
@@ -33,11 +32,11 @@ public class ShaderGenerator {
         glGetShaderiv(shaderObjectId, GL_COMPILE_STATUS, compileStatus, 0);
 
         //Выводим в лог информацию о компиляции
-        BicycleDebugger.v(TAG, "Results of compiling source:\n" + shaderCode + '\n' + glGetShaderInfoLog(shaderObjectId));
+        //todo: BicycleDebugger.v(TAG, "Results of compiling source:\n" + shaderCode + '\n' + glGetShaderInfoLog(shaderObjectId));
 
         if (compileStatus[0] == 0) {
             glDeleteShader(shaderObjectId);
-            BicycleDebugger.w(TAG, "Compilation of shader failed.");
+            //todo: BicycleDebugger.w(TAG, "Compilation of shader failed.");
             return 0;
         }
         return shaderObjectId;
@@ -47,7 +46,7 @@ public class ShaderGenerator {
         final int programObjectId = glCreateProgram();
 
         if (programObjectId==0) {
-            BicycleDebugger.w(TAG, "Could not create new program.");
+            //todo: BicycleDebugger.w(TAG, "Could not create new program.");
             return 0;
         }
 
@@ -56,11 +55,11 @@ public class ShaderGenerator {
         glLinkProgram(programObjectId);
         final int[] linkStatus = new int[1];
         glGetProgramiv(programObjectId, GL_LINK_STATUS, linkStatus, 0);
-        BicycleDebugger.v(TAG, "Results of linking program:\n" + glGetProgramInfoLog(programObjectId));
+        //todo: BicycleDebugger.v(TAG, "Results of linking program:\n" + glGetProgramInfoLog(programObjectId));
 
         if (linkStatus[0] == 0){
             glDeleteProgram(programObjectId);
-            BicycleDebugger.w(TAG, "Linking of program failed.");
+            //todo: BicycleDebugger.w(TAG, "Linking of program failed.");
             return 0;
         }
 
@@ -84,8 +83,8 @@ public class ShaderGenerator {
         glValidateProgram(programObjectId);
         final int[] validateStatus = new int[1];
         glGetProgramiv(programObjectId, GL_VALIDATE_STATUS, validateStatus, 0);
-        BicycleDebugger.v(TAG, "Results of validating:\n" + validateStatus[0] + "\nLog" +
-                glGetProgramInfoLog(programObjectId));
+        //todo: BicycleDebugger.v(TAG, "Results of validating:\n" + validateStatus[0] + "\nLog" +
+              //  glGetProgramInfoLog(programObjectId));
         return validateStatus[0]!=0;
     }
 }

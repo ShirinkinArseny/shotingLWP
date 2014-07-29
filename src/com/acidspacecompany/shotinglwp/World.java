@@ -70,18 +70,15 @@ public class World {
     }
 
     public World(Context context) {
+        res=context.getResources();
+
         for (int i = 0; i < 100; i++)
-            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), 5, 50), i % 2);
+            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), 20, 50), i % 2);
 
         Barriers.init(displayWidth, displayHeight);
-        for (int i = 0; i < 10; i++)
-            for (int j=0; j<2; j++){
-                Barriers.addBarrier(new Building(50+i*70,
-                        50+j*200, 150, 50, (float) Math.PI/2));
-
-            }
+                Barriers.addBarrier(new Building(270,
+                        250, 250, 25, (float) Math.PI/2+rnd.nextFloat()));
         Barriers.finishAddingBarriers();
-        res=context.getResources();
     }
 
     public void init() {
@@ -130,8 +127,14 @@ public class World {
         }
     }
 
-    public void setSurface(int width, int height) {
+    public void resize(int width, int height) {
         Graphic.resize(width, height);
+        for (Man m: men) {
+            m.reMatrix();
+        }
+        for (Building m: Barriers.getBarriers()) {
+            m.reMatrix();
+        }
     }
 
     //Пузырёк в продакшоне :3
@@ -336,8 +339,10 @@ public class World {
     }
 
     private void drawMenLayer() {
+        Graphic.bindBitmap(redID);
         for (Man m : teamedMen[0])
             m.draw(redID);
+        Graphic.bindBitmap(blueID);
         for (Man m : teamedMen[1])
             m.draw(blueID);
     }
@@ -357,8 +362,9 @@ public class World {
     }
 
     private void drawHousesLayer() {
+        Graphic.bindBitmap(houseID);
         for (Building m : Barriers.getBarriers())
-            m.draw(houseID);
+            m.draw();
     }
 
     private void draw() {
@@ -367,6 +373,6 @@ public class World {
         drawDropsLayer();
         drawBulletsLayer();
         drawHousesLayer();
-        end();
+        Graphic.end();
     }
 }
