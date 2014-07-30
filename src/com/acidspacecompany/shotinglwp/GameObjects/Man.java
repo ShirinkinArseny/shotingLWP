@@ -1,12 +1,11 @@
-package com.acidspacecompany.shotinglwp;
+package com.acidspacecompany.shotinglwp.GameObjects;
 
-import android.util.Log;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.Geometry.Rectangle;
 import com.acidspacecompany.shotinglwp.Geometry.Segment;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 
-public class Man extends Rectangle{
+public class Man extends Rectangle implements GameObject{
 
     private float widthPow2;
     private float width2;
@@ -18,7 +17,7 @@ public class Man extends Rectangle{
     private int blockX=0;
     private int blockY=0;
     private Man visibleMan;
-    private int rotateScaleMatrix;
+    private int rotateScaleMatrix=-1;
 
     public void cleanVisibility(){
         visibleMan=null;
@@ -40,9 +39,15 @@ public class Man extends Rectangle{
         return health>0;
     }
 
-    public void draw(int id) {
-        Graphic.bindBitmap(id);
-        Graphic.bindScaleMatrix(rotateScaleMatrix);
+    public void dispose() {
+        Graphic.cleanScaleMatrixID(rotateScaleMatrix);}
+
+    public void prepareToDraw() {
+        Graphic.bindColor(1, 1, 1, 1);
+    }
+
+    public void draw() {
+        Graphic.bindRotateScaleMatrix(rotateScaleMatrix);
         Graphic.drawBitmap(getX(), getY());
     }
 
@@ -50,7 +55,7 @@ public class Man extends Rectangle{
         angle= (float) Math.atan2(p.getY()-getY(), p.getX()-getX());
         cosSpeed= (float) (Math.cos(angle)*speed);
         sinSpeed= (float) (Math.sin(angle)*speed);
-        rotateScaleMatrix=Graphic.getRotateScaleMatrixID(width2, width2, (float) Math.toDegrees(angle));
+        reMatrix();
     }
 
     public boolean getIsIntersect(Segment s) {
@@ -73,12 +78,12 @@ public class Man extends Rectangle{
         return blockY;
     }
 
-    public void move(float dt) {
+    public void update(float dt) {
         float dx=dt*cosSpeed;
         float dy=dt*sinSpeed;
-        int newBlockX=Barriers.getXBlock(getX()+dx);
-        int newBlockY=Barriers.getYBlock(getY()+dy);
-        if (Barriers.getContainsPotentialBarriers(blockX, blockY)) {
+        int newBlockX= Buildings.getXBlock(getX() + dx);
+        int newBlockY= Buildings.getYBlock(getY() + dy);
+        if (Buildings.getContainsPotentialBarriers(blockX, blockY)) {
             return;
         }
         blockX=newBlockX;
@@ -91,11 +96,11 @@ public class Man extends Rectangle{
         width2=w/2;
         widthPow2=w*w;
         this.speed=speed;
-        rotateScaleMatrix=Graphic.getRotateScaleMatrixID(width2, width2, (float) Math.toDegrees(angle));
-        setTarget(new Point(400, 240));
+        setTarget(new Point(50, 50));
     }
 
     public void reMatrix() {
+        if (rotateScaleMatrix!=-1)
         Graphic.cleanScaleMatrixID(rotateScaleMatrix);
         rotateScaleMatrix=Graphic.getRotateScaleMatrixID(width2, width2, (float) Math.toDegrees(angle));
     }

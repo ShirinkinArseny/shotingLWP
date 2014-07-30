@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.opengl.Matrix;
 import android.util.Log;
+import com.acidspacecompany.shotinglwp.BicycleDebugger;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Generators.TextureGenerator;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.FillBitmapShader;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.FillColorShader;
@@ -212,7 +213,7 @@ public class Graphic {
                 break;
         }
 
-        bindColor(1, 1, 1, 0.5f);
+        bindColor(1, 1, 1, 1);
     }
 
     public static void end() {
@@ -259,7 +260,7 @@ public class Graphic {
         return genInfinityTexture(rotate(b));
     }
 
-    private static float[] scaleMatrix = new float[16];
+    private static float[] rotateScaleMatrix = new float[16];
     private static float[] translateMatrix = new float[16];
     private static float[] resultMatrix = new float[16];
 
@@ -323,7 +324,7 @@ public class Graphic {
     private static int notNullResultMatrices=0;
 
     public static void unBindMatrices() {
-        scaleMatrix=new float[16];
+        rotateScaleMatrix=new float[16];
         translateMatrix=new float[16];
         resultMatrix=new float[16];
     }
@@ -333,7 +334,11 @@ public class Graphic {
     }
 
     public static void bindScaleMatrix(int id) {
-        Graphic.scaleMatrix=scaleMatrices.get(id);
+        Graphic.rotateScaleMatrix =scaleMatrices.get(id);
+    }
+
+    public static void bindRotateScaleMatrix(int id) {
+        bindScaleMatrix(id);
     }
 
     public static void bindResultMatrix(int id) {
@@ -388,7 +393,7 @@ public class Graphic {
 
     private static void applyTranslationAndScale() {
         resultMatrix=new float[16];
-        Matrix.multiplyMM(resultMatrix, 0, translateMatrix, 0, scaleMatrix, 0);
+        Matrix.multiplyMM(resultMatrix, 0, translateMatrix, 0, rotateScaleMatrix, 0);
     }
 
     public static int getScaleMatrixID(float w, float h) {
@@ -403,6 +408,8 @@ public class Graphic {
     }
 
     public static int getRotateScaleMatrixID(float w, float h, float angle) {
+
+
         notNullScaleMatrices++;
         for (int i=0; i<scaleMatrices.size(); i++)
             if (scaleMatrices.get(i)==null) {
@@ -436,8 +443,11 @@ public class Graphic {
     }
 
     public static void cleanScaleMatrixID(int id) {
-        scaleMatrices.set(id, null);
-        notNullScaleMatrices--;
+        if (scaleMatrices.get(id)!=null) {
+            scaleMatrices.set(id, null);
+            notNullScaleMatrices--;
+        }
+        else BicycleDebugger.e("cleanScaleMatrixID", id + " TODO!"); //todo
     }
 
     public static void cleanResultMatrixID(int id) {
@@ -446,7 +456,7 @@ public class Graphic {
     }
 
     private static void setScaleMatrix(float w, float h) {
-       scaleMatrix=generateScaleMatrix(w, h);
+       rotateScaleMatrix =generateScaleMatrix(w, h);
     }
 
     private static void setTranslationMatrix(float x, float y) {

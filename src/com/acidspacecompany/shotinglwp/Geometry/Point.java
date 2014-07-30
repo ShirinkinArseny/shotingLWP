@@ -60,14 +60,14 @@ public class Point {
         rotate(angle, center.x, center.y);
     }
 
-    public Point getRotated(float angle, Point center) {
+    public Point getRotated(float angle, float xp, float yp) {
 
-        float ax = x - center.x;
-        float ay = y - center.y;
+        float ax = x - xp;
+        float ay = y - yp;
 
         double newX = ax * Math.cos(angle) - ay * Math.sin(angle);
         double newY = ax * Math.sin(angle) + ay * Math.cos(angle);
-        return new Point(newX + center.x, newY + center.y);
+        return new Point(newX + xp, newY + yp);
     }
 
     public Point multiply(double scalar) {
