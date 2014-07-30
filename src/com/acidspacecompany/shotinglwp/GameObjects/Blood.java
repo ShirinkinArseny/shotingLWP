@@ -26,7 +26,7 @@ public class Blood extends Point implements GameObject{
 
     public void draw() {
         float t=alpha.getValue();
-        Graphic.setThresholdParams(t/2, t, 1);
+        Graphic.setThresholdParams(t/2, t, (t+0.5f)/1.5f);
         Graphic.bindRotateScaleMatrix(rotateScaleMatrix);
         Graphic.drawBitmap(getX(), getY());
     }
