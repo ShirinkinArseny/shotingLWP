@@ -23,7 +23,7 @@ public class Blood extends Point implements GameObject{
 
     public void draw() {
         float t=alpha.getValue();
-        Graphic.setThresholdParams(0, 1, 1);
+        Graphic.setThresholdParams(t/2, t, 1);
         Graphic.drawBitmap(getX(), getY(), size, size, 0);//todo: matrix
     }
 
@@ -46,6 +46,6 @@ public class Blood extends Point implements GameObject{
         super(x, y);
         this.length=length;
         this.size=size;
-        alpha=new LinearTimeFunction(length, 1, 0);
+        alpha=new LinearTimeFunction(length, 0, 1);
     }
 }

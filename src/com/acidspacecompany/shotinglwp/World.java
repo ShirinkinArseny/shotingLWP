@@ -25,7 +25,7 @@ public class World {
     private static LinkedList<Man> men = new LinkedList<>();
     private static LinkedList<Man>[] teamedMen = new LinkedList[]{new LinkedList(), new LinkedList()};
     private static LinkedList<Bullet> bulls = new LinkedList<>();
-    private static LinkedList<Extinction> blood = new LinkedList<>();
+    private static LinkedList<Blood> blood = new LinkedList<>();
     private static LinkedList<Extinction> lights = new LinkedList<>();
     private static HashSet<Man>[] visibleMen = new HashSet[]{new HashSet(), new HashSet()};
     private static final Random rnd = new Random();
@@ -55,7 +55,7 @@ public class World {
     }
 
     public static void makeBlood(Bullet b) {
-        blood.add(new Extinction(b.getEnd().getX(), b.getEnd().getY(), 60f, 1f));
+        blood.add(new Blood(b.getEnd().getX(), b.getEnd().getY(), 60f, 1f));
     }
 
     public static void makeLight(Bullet b) {
@@ -171,17 +171,16 @@ public class World {
 
     private void checkBuildingsAndBulletsForIntersection() {
         for (Bullet b : bulls) {
-            boolean alive=true;
+            if (b.getIsNeeded())
             for (ConvexPolygon bu : Buildings.getPotentialBarriers(b.getStart().getX(), b.getStart().getY())) {
                 if (bu.containsBySegmentSide(b.getStart())) {
                     b.dispose();
-                    alive=false;
                     //todo: drop something
                     break;
                 }
             }
 
-            if (alive)
+            if (b.getIsNeeded())
             for (ConvexPolygon bu : Buildings.getPotentialBarriers(b.getEnd().getX(), b.getEnd().getY())) {
                 if (bu.containsBySegmentSide(b.getEnd())) {
                     b.dispose();
@@ -193,7 +192,8 @@ public class World {
     }
 
     private void checkManAndBulletsForIntersection() {
-        for (Bullet b : bulls) {
+        for (Bullet b : bulls)
+            if (b.getIsNeeded()) {
             if (b.getStart().getX() < 0 || b.getStart().getX() > displayWidth || b.getStart().getY() < 0 || b.getStart().getY() > displayHeight)
                 b.dispose();
             else {
@@ -311,7 +311,6 @@ public class World {
         /*---   bullets   ---*/
         updateGameObjects(bulls, dt);
         checkManAndBulletsForIntersection();
-        removeUnusedGameObjects(bulls);
         checkBuildingsAndBulletsForIntersection();
         removeUnusedGameObjects(bulls);
         /*---   blood   ---*/
