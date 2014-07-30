@@ -8,6 +8,7 @@ import com.acidspacecompany.shotinglwp.OpenGLWrapping.Generators.TextureGenerato
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.FillBitmapShader;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.FillColorShader;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.TextureShader;
+import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.ThresholdTextureShader;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -67,9 +68,16 @@ public class Graphic {
     private static FillColorShader fillColorShader;
     //Шейдер, который заливает всё текстурой и прозрачностью
     private static TextureShader textureShader;
+    //Шейдер для текстуры с трешолдом
+    private static ThresholdTextureShader thresholdTextureShader;
+    public static void setThresholdParams(float V2, float Th, float ThLVL) {
+        thresholdTextureShader.setTh(Th);
+        thresholdTextureShader.setV2(V2);
+        thresholdTextureShader.setThLVL(ThLVL);
+    }
+
     //Шейдер для замощения всего одним битмапом
     private static FillBitmapShader fillBitmapShader;
-    //Шейдер для отрисовки прямых
 
     //Итентификатор VBO
     private static int vboId;
@@ -84,10 +92,14 @@ public class Graphic {
         fillColorShader.validate();
         textureShader = new TextureShader(context);
         textureShader.validate();
+        thresholdTextureShader = new ThresholdTextureShader(context);
+        thresholdTextureShader.validate();
         //fontShader = new FontShader(context);
         //fontShader.validate();
         fillBitmapShader = new FillBitmapShader(context);
         fillBitmapShader.validate();
+
+
 
         //Создаем VBO для вершин прямоугольника
         int[] buffers = new int[1];
@@ -142,7 +154,8 @@ public class Graphic {
     public enum Mode {
         FILL_BITMAP,
         DRAW_RECTANGLES,
-        DRAW_BITMAPS
+        DRAW_BITMAPS,
+        DRAW_THRESHOLD_BITMAP
     }
 
     /**
@@ -165,7 +178,7 @@ public class Graphic {
     /**
      * Задаем режим отрисовки текстур
      */
-    private static void initBitmaps() {
+    private static void initBitmaps(TextureShader textureShader) {
         textureShader.use();
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
         final int aPosition = textureShader.get_aPosition();
@@ -206,12 +219,13 @@ public class Graphic {
         switch (drawMode) {
             case DRAW_RECTANGLES: initRectangles();
                 break;
-            case DRAW_BITMAPS:    initBitmaps();
+            case DRAW_BITMAPS:    initBitmaps(textureShader);
+                break;
+            case DRAW_THRESHOLD_BITMAP: initBitmaps(thresholdTextureShader);
                 break;
             case FILL_BITMAP: //initFillBitmap();
                 break;
         }
-
         bindColor(1, 1, 1, 0.5f);
     }
 
@@ -255,7 +269,7 @@ public class Graphic {
         return id;
     }
 
-    public static int genInfinityTextureBackgroung(Bitmap b) {
+    public static int genInfinityTextureBackground(Bitmap b) {
         return genInfinityTexture(rotate(b));
     }
 
@@ -301,6 +315,8 @@ public class Graphic {
     /*
     ------------------------------ OPTIMISATION START LINE -------------------------------------------
     */
+    //TODO: чекать уже используемую матрицу
+
     public static int getScaleMatricesCount() {
         return scaleMatrices.size();
     }
@@ -336,6 +352,10 @@ public class Graphic {
         Graphic.scaleMatrix=scaleMatrices.get(id);
     }
 
+    /**
+     * Применение результирующей матрицы для статичного объекта
+     * @param id
+     */
     public static void bindResultMatrix(int id) {
         Graphic.resultMatrix=resultMatrices.get(id);
     }
@@ -402,6 +422,20 @@ public class Graphic {
         return scaleMatrices.size()-1;
     }
 
+    /**
+     * Для использования этой фичи необходимо:
+     * 1) Создать матрицу масштаба-поворота для всех однотипных объектов
+     * 2) При отрисовке прибиндить её
+     * 3) Рисовать методом drawBitmap(x,y)
+     */
+
+    /**
+     * Создание матрицы для объекта, который может только перемещаться
+     * @param w Ширина
+     * @param h Высота
+     * @param angle Угол
+     * @return ID матрицы
+     */
     public static int getRotateScaleMatrixID(float w, float h, float angle) {
         notNullScaleMatrices++;
         for (int i=0; i<scaleMatrices.size(); i++)
@@ -413,6 +447,14 @@ public class Graphic {
         return scaleMatrices.size()-1;
     }
 
+    /**
+     * Создание результирующей матрицы для статичного (неизменяемого) объекта
+     * @param x
+     * @param y
+     * @param w Ширина
+     * @param h Высота
+     * @return ID результирующей матрицы
+     */
     public static int getResultMatrixID(float x, float y, float w, float h) {
         notNullResultMatrices++;
         for (int i=0; i<resultMatrices.size(); i++)
@@ -445,6 +487,8 @@ public class Graphic {
         notNullResultMatrices--;
     }
 
+    //Внутренние методы для отрисовки совсем уж не статичных объектов
+    //Или же для тех компонент, которых не хватает в перемноженых
     private static void setScaleMatrix(float w, float h) {
        scaleMatrix=generateScaleMatrix(w, h);
     }
@@ -456,6 +500,8 @@ public class Graphic {
     private static void setTranslationRotateMatrix(float x, float y, float angle) {
         translateMatrix=generateTranslationRotateMatrix(x, y, angle);
     }
+
+    //КОНЕЦ
 
     public static void bindColor(float r, float g, float b, float a) {
         textureShader.setColor(r, g, b, a);

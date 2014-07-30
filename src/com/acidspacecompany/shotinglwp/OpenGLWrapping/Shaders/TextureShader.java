@@ -9,7 +9,14 @@ import java.nio.FloatBuffer;
 
 public class TextureShader implements Shader  {
 
-    private int programId;
+    protected int getVertexShaderID() {
+        return R.raw.texture_vertex_shader;
+    }
+    protected int getFragmentShaderID() {
+        return R.raw.texture_fragment_shader;
+    }
+
+    protected int programId;
 
     private int uMatrix;
     public void setMatrix(FloatBuffer matrix) {
@@ -49,7 +56,7 @@ public class TextureShader implements Shader  {
     }
 
     public TextureShader(Context context) {
-        programId = ShaderGenerator.createProgram(context, R.raw.texture_vertex_shader, R.raw.texture_fragment_shader);
+        programId = ShaderGenerator.createProgram(context, getVertexShaderID(), getFragmentShaderID());
         uMatrix = GLES20.glGetUniformLocation(programId, "u_Matrix");
         aPosition = GLES20.glGetAttribLocation(programId, "a_Position");
         aTextureCoordinates = GLES20.glGetAttribLocation(programId, "a_TextureCoordinates");
