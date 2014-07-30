@@ -1,4 +1,4 @@
-package com.acidspacecompany.shotinglwp;
+package com.acidspacecompany.shotinglwp.GameObjects;
 
 import android.util.Log;
 import com.acidspacecompany.shotinglwp.Geometry.ConvexPolygon;
@@ -8,9 +8,8 @@ import com.acidspacecompany.shotinglwp.Geometry.Segment;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 
-public class Barriers {
+public class Buildings {
 
     private static ArrayList<Building> barriers = new ArrayList<>();
     private static final int blockWidth=5;
