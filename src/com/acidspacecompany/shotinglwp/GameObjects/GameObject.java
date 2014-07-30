@@ -12,6 +12,8 @@ public interface GameObject {
 
     public void dispose();
 
+    public void setIsNoNeededMore();
+
     public boolean getIsNeeded();
 
 

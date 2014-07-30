@@ -42,6 +42,10 @@ public class Man extends Rectangle implements GameObject{
     public void dispose() {
         Graphic.cleanScaleMatrixID(rotateScaleMatrix);}
 
+    public void setIsNoNeededMore(){
+        health=-1;
+    }
+
     public void prepareToDraw() {
         Graphic.bindColor(1, 1, 1, 1);
     }

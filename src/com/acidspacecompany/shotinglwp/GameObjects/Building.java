@@ -24,8 +24,12 @@ public class Building extends Rectangle implements GameObject{
     }
 
     @Override
+    public void setIsNoNeededMore(){
+    }
+
+    @Override
     public boolean getIsNeeded() {
-        return false;
+        return true;
     }
 
     public void reMatrix() {

@@ -4,12 +4,15 @@ import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 import com.acidspacecompany.shotinglwp.TimeFunctions.LinearTimeFunction;
 
+import java.util.Random;
+
 public class Blood extends Point implements GameObject{
 
     private LinearTimeFunction alpha;
     private float time=0;
     private float length;
-    private float size;
+    private int rotateScaleMatrix=-1;
+    private static final Random rnd=new Random();
 
     @Override
     public void reMatrix() {
@@ -24,7 +27,8 @@ public class Blood extends Point implements GameObject{
     public void draw() {
         float t=alpha.getValue();
         Graphic.setThresholdParams(t/2, t, 1);
-        Graphic.drawBitmap(getX(), getY(), size, size, 0);//todo: matrix
+        Graphic.bindRotateScaleMatrix(rotateScaleMatrix);
+        Graphic.drawBitmap(getX(), getY());
     }
 
     @Override
@@ -34,7 +38,11 @@ public class Blood extends Point implements GameObject{
 
     @Override
     public void dispose() {
+        Graphic.cleanScaleMatrixID(rotateScaleMatrix);
+    }
 
+    @Override
+    public void setIsNoNeededMore(){
     }
 
     @Override
@@ -45,7 +53,8 @@ public class Blood extends Point implements GameObject{
     public Blood(float x, float y, float size, float length) {
         super(x, y);
         this.length=length;
-        this.size=size;
         alpha=new LinearTimeFunction(length, 0, 1);
+        rotateScaleMatrix=Graphic.getRotateScaleMatrixID(size, size,
+                rnd.nextFloat()*360);
     }
 }

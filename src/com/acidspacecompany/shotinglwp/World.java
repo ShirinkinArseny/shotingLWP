@@ -130,7 +130,6 @@ public class World {
         float delta = (cTime - lastTime) / 1000f;
         lastTime = cTime;
         update(delta);
-        Graphic.startDraw();
         draw();
     }
 
@@ -174,7 +173,7 @@ public class World {
             if (b.getIsNeeded())
             for (ConvexPolygon bu : Buildings.getPotentialBarriers(b.getStart().getX(), b.getStart().getY())) {
                 if (bu.containsBySegmentSide(b.getStart())) {
-                    b.dispose();
+                    b.setIsNoNeededMore();
                     //todo: drop something
                     break;
                 }
@@ -183,7 +182,7 @@ public class World {
             if (b.getIsNeeded())
             for (ConvexPolygon bu : Buildings.getPotentialBarriers(b.getEnd().getX(), b.getEnd().getY())) {
                 if (bu.containsBySegmentSide(b.getEnd())) {
-                    b.dispose();
+                    b.setIsNoNeededMore();
                     //todo: drop something
                     break;
                 }
@@ -195,7 +194,7 @@ public class World {
         for (Bullet b : bulls)
             if (b.getIsNeeded()) {
             if (b.getStart().getX() < 0 || b.getStart().getX() > displayWidth || b.getStart().getY() < 0 || b.getStart().getY() > displayHeight)
-                b.dispose();
+                b.setIsNoNeededMore();
             else {
                 int index = getNearestMenIndex(b.getStart().getX());
                 int target = getNearestMenIndex(b.getEnd().getX());
@@ -205,7 +204,7 @@ public class World {
                     target = Math.min(target + 1, men.size() - 1);
                     for (int i = index; i < target; i++) {
                         if (men.get(i).getIsIntersect(b)) {
-                            b.dispose();
+                            b.setIsNoNeededMore();
                             makeBlood(b);
                             break;
                         }
@@ -213,7 +212,7 @@ public class World {
                 } else {
                     for (int i = index; i >= target; i--) {
                         if (men.get(i).getIsIntersect(b)) {
-                            b.dispose();
+                            b.setIsNoNeededMore();
                             makeBlood(b);
                             break;
                         }
@@ -226,7 +225,9 @@ public class World {
     private void removeUnusedGameObjects(List objects) {
         for (int i = 0; i < objects.size(); i++) {
             if (!((GameObject) objects.get(i)).getIsNeeded()) {
+                ((GameObject) objects.get(i)).dispose();
                 objects.remove(i);
+                if (i>0) i--;
             }
         }
     }
@@ -340,6 +341,7 @@ public class World {
     }
 
     private void draw() {
+        Graphic.startDraw();
         Graphic.begin(Graphic.Mode.DRAW_BITMAPS);
         drawBgLayer();
         Graphic.begin(Graphic.Mode.DRAW_THRESHOLD_BITMAP);
