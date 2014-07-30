@@ -255,7 +255,7 @@ public class Graphic {
         android.graphics.Matrix bitmapRotation = new android.graphics.Matrix();
         bitmapRotation.postRotate(180);
         bitmapRotation.postScale(-1,1);
-        return Bitmap.createBitmap(b , 0, 0, b.getWidth(), b.getHeight(), bitmapRotation, true);
+        return Bitmap.createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), bitmapRotation, true);
     }
 
     public static int genTextureBackground(Bitmap b) {
@@ -273,7 +273,7 @@ public class Graphic {
         return genInfinityTexture(rotate(b));
     }
 
-    private static float[] scaleMatrix = new float[16];
+    private static float[] rotateScaleMatrix = new float[16];
     private static float[] translateMatrix = new float[16];
     private static float[] resultMatrix = new float[16];
 
@@ -339,7 +339,7 @@ public class Graphic {
     private static int notNullResultMatrices=0;
 
     public static void unBindMatrices() {
-        scaleMatrix=new float[16];
+        rotateScaleMatrix =new float[16];
         translateMatrix=new float[16];
         resultMatrix=new float[16];
     }
@@ -348,8 +348,12 @@ public class Graphic {
         glBindTexture(GL_TEXTURE_2D, id);
     }
 
+    public static void bindRotateScaleMatrix(int id) {
+        bindScaleMatrix(id);
+    }
+
     public static void bindScaleMatrix(int id) {
-        Graphic.scaleMatrix=scaleMatrices.get(id);
+        Graphic.rotateScaleMatrix =scaleMatrices.get(id);
     }
 
     /**
@@ -378,7 +382,7 @@ public class Graphic {
     private static float[] generateRotateMatrix(float angle) {
         float [] m=new float[16];
         Matrix.setIdentityM(m, 0);
-        Matrix.rotateM(m, 0, angle+90, 0f, 0f, 1f);
+        Matrix.rotateM(m, 0, angle + 90, 0f, 0f, 1f);
         return m;
     }
 
@@ -408,7 +412,7 @@ public class Graphic {
 
     private static void applyTranslationAndScale() {
         resultMatrix=new float[16];
-        Matrix.multiplyMM(resultMatrix, 0, translateMatrix, 0, scaleMatrix, 0);
+        Matrix.multiplyMM(resultMatrix, 0, translateMatrix, 0, rotateScaleMatrix, 0);
     }
 
     public static int getScaleMatrixID(float w, float h) {
@@ -490,7 +494,7 @@ public class Graphic {
     //Внутренние методы для отрисовки совсем уж не статичных объектов
     //Или же для тех компонент, которых не хватает в перемноженых
     private static void setScaleMatrix(float w, float h) {
-       scaleMatrix=generateScaleMatrix(w, h);
+       rotateScaleMatrix =generateScaleMatrix(w, h);
     }
 
     private static void setTranslationMatrix(float x, float y) {

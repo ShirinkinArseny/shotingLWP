@@ -311,6 +311,7 @@ public class World {
         /*---   bullets   ---*/
         updateGameObjects(bulls, dt);
         checkManAndBulletsForIntersection();
+        removeUnusedGameObjects(bulls);
         checkBuildingsAndBulletsForIntersection();
         removeUnusedGameObjects(bulls);
         /*---   blood   ---*/
@@ -342,7 +343,9 @@ public class World {
     private void draw() {
         Graphic.begin(Graphic.Mode.DRAW_BITMAPS);
         drawBgLayer();
+        Graphic.begin(Graphic.Mode.DRAW_THRESHOLD_BITMAP);
         drawGameObjectLayer(blood, bloodID);
+        Graphic.begin(Graphic.Mode.DRAW_BITMAPS);
         drawGameObjectLayer(lights, lightsID);
         drawGameObjectLayer(teamedMen[0], redID);
         drawGameObjectLayer(teamedMen[1], blueID);
