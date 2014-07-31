@@ -13,10 +13,9 @@ void main()
 {
     //Задаем текстурные координаты
     gl_FragColor = texture2D(u_TextureUnit, v_TextureCoordinates);
+    gl_FragColor.rgb /= gl_FragColor.a;
     //Задаем цвет
     gl_FragColor *= u_Color;
-    gl_FragColor.rgb *= u_Color.a;
-
     //Переопределяем альфу по графику
     float src = gl_FragColor.a;
     if (src<u_V2) {
