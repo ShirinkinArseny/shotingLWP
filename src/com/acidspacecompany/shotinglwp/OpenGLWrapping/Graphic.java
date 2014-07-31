@@ -6,10 +6,7 @@ import android.opengl.Matrix;
 import android.util.Log;
 import com.acidspacecompany.shotinglwp.BicycleDebugger;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Generators.TextureGenerator;
-import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.FillBitmapShader;
-import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.FillColorShader;
-import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.TextureShader;
-import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.ThresholdTextureShader;
+import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -77,6 +74,12 @@ public class Graphic {
         thresholdTextureShader.setThLVL(ThLVL);
     }
 
+    //Шейдер для анимированой текстуры
+    private static AnimationTextureShader animationTextureShader;
+    public static void setAnimationPosition(int position) {
+        animationTextureShader.setPosition(position);
+    }
+
     //Шейдер для замощения всего одним битмапом
     private static FillBitmapShader fillBitmapShader;
 
@@ -95,10 +98,13 @@ public class Graphic {
         textureShader.validate();
         thresholdTextureShader = new ThresholdTextureShader(context);
         thresholdTextureShader.validate();
+        animationTextureShader = new AnimationTextureShader(context);
+        animationTextureShader.validate();
         //fontShader = new FontShader(context);
         //fontShader.validate();
         fillBitmapShader = new FillBitmapShader(context);
         fillBitmapShader.validate();
+
 
 
 
@@ -156,7 +162,8 @@ public class Graphic {
         FILL_BITMAP,
         DRAW_RECTANGLES,
         DRAW_BITMAPS,
-        DRAW_THRESHOLD_BITMAP
+        DRAW_THRESHOLD_BITMAP,
+        DRAW_ANIMATED_BITMAP
     }
 
     /**
@@ -216,7 +223,10 @@ public class Graphic {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    private static Mode currentDrawMode;
+
     public static void begin(Mode drawMode) {
+        currentDrawMode = drawMode;
         switch (drawMode) {
             case DRAW_RECTANGLES: initRectangles();
                 break;
@@ -226,11 +236,14 @@ public class Graphic {
                 break;
             case FILL_BITMAP: //initFillBitmap();
                 break;
+            case DRAW_ANIMATED_BITMAP: initBitmaps(animationTextureShader);
+                break;
         }
         bindColor(1, 1, 1, 0.5f);
     }
 
     public static void end() {
+        currentDrawMode = null;
         glUseProgram(0);
     }
 
@@ -239,6 +252,12 @@ public class Graphic {
 
     public static int[] genTextures(Bitmap[] array) {
         return TextureGenerator.loadTextures(array);
+    }
+
+    public static int genAnimationTexture(Bitmap b) {
+        final int id = TextureGenerator.loadAnimationTexture(b);
+        textures.add(id);
+        return id;
     }
 
     /**
@@ -342,6 +361,8 @@ public class Graphic {
     private static int notNullResultMatrices=0;
 
     public static void bindBitmap(int id) {
+        if (currentDrawMode == Mode.DRAW_ANIMATED_BITMAP)
+            animationTextureShader.setWidth(TextureGenerator.getAnimationPictureHeight(id));
         glBindTexture(GL_TEXTURE_2D, id);
     }
 

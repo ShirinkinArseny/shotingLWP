@@ -26,8 +26,8 @@ public class ThresholdTextureShader extends TextureShader {
 
     public ThresholdTextureShader(Context context) {
         super(context);
-        uTh = GLES20.glGetUniformLocation(programId, "u_Th");
-        uThLVL = GLES20.glGetUniformLocation(programId, "u_ThLVL");
-        uV2 = GLES20.glGetUniformLocation(programId, "u_V2");
+        uTh = GLES20.glGetUniformLocation(getProgramId(), "u_Th");
+        uThLVL = GLES20.glGetUniformLocation(getProgramId(), "u_ThLVL");
+        uV2 = GLES20.glGetUniformLocation(getProgramId(), "u_V2");
     }
 }

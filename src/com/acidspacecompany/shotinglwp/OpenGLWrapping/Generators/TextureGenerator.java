@@ -2,12 +2,26 @@ package com.acidspacecompany.shotinglwp.OpenGLWrapping.Generators;
 
 import android.graphics.Bitmap;
 
+import java.util.HashMap;
+
 import static android.opengl.GLES20.*;
 import static android.opengl.GLUtils.texImage2D;
 
 
 public class TextureGenerator {
     private static final String TAG = "TextureGenerator";
+
+    //Высоты текстур для анимации
+    private static HashMap<Integer, Integer> animationPictureHeight;
+    public static int getAnimationPictureHeight(int texture) {
+        return animationPictureHeight.get(texture);
+    }
+
+    public static int loadAnimationTexture(Bitmap bitmap) {
+        int textureId = loadTexture(bitmap, false);
+        animationPictureHeight.put(textureId, bitmap.getHeight());
+        return textureId;
+    }
 
     public static int loadTexture(Bitmap bitmap, boolean isInfinite) {
         final int[] textureObjectIds = new int[1];

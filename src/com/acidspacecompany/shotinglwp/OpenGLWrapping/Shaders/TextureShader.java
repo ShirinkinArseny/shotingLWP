@@ -16,7 +16,8 @@ public class TextureShader implements Shader  {
         return R.raw.texture_fragment_shader;
     }
 
-    protected int programId;
+    private int programId;
+    protected int getProgramId() {return programId;}
 
     private int uMatrix;
     public void setMatrix(FloatBuffer matrix) {
