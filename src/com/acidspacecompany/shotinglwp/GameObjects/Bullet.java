@@ -13,7 +13,7 @@ public class Bullet extends Segment implements GameObject{
     private int rotateScaleMatrix=-1;
 
     public void dispose() {
-        Graphic.cleanScaleMatrixID(rotateScaleMatrix);
+        Graphic.cleanScaleMatrixID(rotateScaleMatrix, "Bullet");
     }
 
     public void setIsNoNeededMore(){
@@ -28,19 +28,18 @@ public class Bullet extends Segment implements GameObject{
     @Override
     public void reMatrix() {
         if (rotateScaleMatrix!=-1)
-            Graphic.cleanScaleMatrixID(rotateScaleMatrix);
-        rotateScaleMatrix =Graphic.getRotateScaleMatrixID(length, length, (float) Math.toDegrees(angle));
+            Graphic.cleanScaleMatrixID(rotateScaleMatrix, "Bullet");
+        rotateScaleMatrix =Graphic.getRotateScaleMatrixID(
+                length, length, (float) Math.toDegrees(angle), "Bullet");
     }
 
     @Override
     public void update(float dt){
-        float dxt=dx*dt;
-        float dyt=dy*dt;
-        move(dxt, dyt);
+        move(dx*dt, dy*dt);
     }
 
     public void draw() {
-            Graphic.bindRotateScaleMatrix(rotateScaleMatrix);
+            Graphic.bindRotateScaleMatrix(rotateScaleMatrix, "Bullet");
             Graphic.drawBitmap(getStart().getX(), getStart().getY());
     }
 
@@ -49,10 +48,10 @@ public class Bullet extends Segment implements GameObject{
         Graphic.bindColor(1, 1, 1, 1);
     }
 
-    public Bullet(float x1, float y1, float x2, float y2, float angle, float speed) {
-        super(x1, y1, x2, y2);
+    public Bullet(float x1, float y1, float length, float angle, float speed) {
+        super(x1, y1, (float)(x1 + Math.cos(angle) * length), (float)(y1 + Math.sin(angle) * length));
         this.angle=angle;
-        length= (float) Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))*2;
+        this.length=length;
         dx=speed*cos;
         dy=speed*sin;
         reMatrix();

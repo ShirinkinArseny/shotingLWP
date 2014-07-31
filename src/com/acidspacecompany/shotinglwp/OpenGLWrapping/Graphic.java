@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.opengl.Matrix;
 import android.util.Log;
+import com.acidspacecompany.shotinglwp.BicycleDebugger;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Generators.TextureGenerator;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.FillBitmapShader;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.FillColorShader;
@@ -13,8 +14,8 @@ import com.acidspacecompany.shotinglwp.OpenGLWrapping.Shaders.ThresholdTextureSh
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 import static android.opengl.GLES20.*;
 
@@ -318,7 +319,7 @@ public class Graphic {
     //TODO: чекать уже используемую матрицу
 
     public static int getScaleMatricesCount() {
-        return scaleMatrices.size();
+        return rotateScaleMatrices.size();
     }
 
     public static int getResultMatricesCount() {
@@ -326,42 +327,52 @@ public class Graphic {
     }
 
     public static int getUsedScaleMatricesCount() {
-        return notNullScaleMatrices;
+        return notNullRotateScaleMatrices;
     }
 
     public static int getUsedResultMatricesCount() {
         return notNullResultMatrices;
     }
 
-    private static ArrayList<float[]> scaleMatrices=new ArrayList<>();
-    private static int notNullScaleMatrices=0;
+    private static ArrayList<float[]> rotateScaleMatrices =new ArrayList<>();
+    private static ArrayList<String> rotateScaleMatricesRM =new ArrayList<>();
+    private static int notNullRotateScaleMatrices =0;
     private static ArrayList<float[]> resultMatrices=new ArrayList<>();
+    private static ArrayList<String> resultMatricesRM=new ArrayList<>();
     private static int notNullResultMatrices=0;
-
-    public static void unBindMatrices() {
-        rotateScaleMatrix =new float[16];
-        translateMatrix=new float[16];
-        resultMatrix=new float[16];
-    }
 
     public static void bindBitmap(int id) {
         glBindTexture(GL_TEXTURE_2D, id);
     }
 
-    public static void bindRotateScaleMatrix(int id) {
-        bindScaleMatrix(id);
+    public static void bindRotateScaleMatrix(int id, String whois) {
+        bindScaleMatrix(id, whois);
     }
 
-    public static void bindScaleMatrix(int id) {
-        Graphic.rotateScaleMatrix =scaleMatrices.get(id);
+    public static void bindScaleMatrix(int id, String whois) {
+        if (!whois.equals(rotateScaleMatricesRM.get(id))) {
+            BicycleDebugger.i("ERROR", "ROTATE SCALE BIND");
+            BicycleDebugger.i("ERROR", id+" "+whois);
+            BicycleDebugger.i("ERROR", id+" "+rotateScaleMatricesRM.get(id));
+            new Exception().printStackTrace();
+            System.exit(1);
+        }
+        rotateScaleMatrix = rotateScaleMatrices.get(id);
     }
 
     /**
      * Применение результирующей матрицы для статичного объекта
      * @param id
      */
-    public static void bindResultMatrix(int id) {
-        Graphic.resultMatrix=resultMatrices.get(id);
+    public static void bindResultMatrix(int id, String whois) {
+        if (!whois.equals(resultMatricesRM.get(id))) {
+            BicycleDebugger.i("ERROR", "RESULT BIND");
+            BicycleDebugger.i("ERROR", id+" "+whois);
+            BicycleDebugger.i("ERROR", id+" "+resultMatricesRM.get(id));
+            new Exception().printStackTrace();
+            System.exit(1);
+        }
+        resultMatrix=resultMatrices.get(id);
     }
 
     private static float [] generateTranslationMatrix(float x, float y) {
@@ -380,9 +391,10 @@ public class Graphic {
     }
 
     private static float[] generateRotateMatrix(float angle) {
+        angle+=90;
         float [] m=new float[16];
         Matrix.setIdentityM(m, 0);
-        Matrix.rotateM(m, 0, angle + 90, 0f, 0f, 1f);
+        Matrix.rotateM(m, 0, angle, 0f, 0f, 1f);
         return m;
     }
 
@@ -412,18 +424,18 @@ public class Graphic {
 
     private static void applyTranslationAndScale() {
         resultMatrix=new float[16];
-        Matrix.multiplyMM(resultMatrix, 0, translateMatrix, 0, rotateScaleMatrix, 0);
+            Matrix.multiplyMM(resultMatrix, 0, translateMatrix, 0, rotateScaleMatrix, 0);
     }
 
     public static int getScaleMatrixID(float w, float h) {
-        notNullScaleMatrices++;
-        for (int i=0; i<scaleMatrices.size(); i++)
-            if (scaleMatrices.get(i)==null) {
-                scaleMatrices.set(i, generateScaleMatrix(w, h));
+        notNullRotateScaleMatrices++;
+        for (int i=0; i< rotateScaleMatrices.size(); i++)
+            if (rotateScaleMatrices.get(i)==null) {
+                rotateScaleMatrices.set(i, generateScaleMatrix(w, h));
                 return i;
             }
-        scaleMatrices.add(generateScaleMatrix(w, h));
-        return scaleMatrices.size()-1;
+        rotateScaleMatrices.add(generateScaleMatrix(w, h));
+        return rotateScaleMatrices.size()-1;
     }
 
     /**
@@ -440,15 +452,21 @@ public class Graphic {
      * @param angle Угол
      * @return ID матрицы
      */
-    public static int getRotateScaleMatrixID(float w, float h, float angle) {
-        notNullScaleMatrices++;
-        for (int i=0; i<scaleMatrices.size(); i++)
-            if (scaleMatrices.get(i)==null) {
-                scaleMatrices.set(i, generateRotateScaleMatrix(w, h, angle));
+    public static int getRotateScaleMatrixID(float w, float h, float angle, String whois) {
+        //BicycleDebugger.i("MATRIXSTAT", "RotateScale: "+notNullRotateScaleMatrices + "/" + rotateScaleMatrices.size());
+        //BicycleDebugger.i("MATRIXSTAT", "Result:      "+notNullResultMatrices+"/"+resultMatrices.size());
+
+
+        notNullRotateScaleMatrices++;
+        for (int i=0; i< rotateScaleMatrices.size(); i++)
+            if (rotateScaleMatrices.get(i)==null) {
+                rotateScaleMatrices.set(i, generateRotateScaleMatrix(w, h, angle));
+                rotateScaleMatricesRM.set(i, whois);
                 return i;
             }
-        scaleMatrices.add(generateScaleMatrix(w, h));
-        return scaleMatrices.size()-1;
+        rotateScaleMatrices.add(generateRotateScaleMatrix(w, h, angle));
+        rotateScaleMatricesRM.add(whois);
+        return rotateScaleMatrices.size()-1;
     }
 
     /**
@@ -459,34 +477,64 @@ public class Graphic {
      * @param h Высота
      * @return ID результирующей матрицы
      */
-    public static int getResultMatrixID(float x, float y, float w, float h) {
+    public static int getResultMatrixID(float x, float y, float w, float h, String whois) {
         notNullResultMatrices++;
         for (int i=0; i<resultMatrices.size(); i++)
             if (resultMatrices.get(i)==null) {
                 resultMatrices.set(i, generateResultMatrix(x, y, w, h));
+                resultMatricesRM.set(i, whois);
                 return i;
             }
         resultMatrices.add(generateResultMatrix(x, y, w, h));
+        resultMatricesRM.add(whois);
         return resultMatrices.size()-1;
     }
 
-    public static int getResultMatrixID(float x, float y, float w, float h, float angle) {
+    public static int getResultMatrixID(float x, float y, float w, float h, float angle, String whois) {
         notNullResultMatrices++;
         for (int i=0; i<resultMatrices.size(); i++)
             if (resultMatrices.get(i)==null) {
                 resultMatrices.set(i, generateResultMatrix(x, y, w, h, angle));
+                resultMatricesRM.set(i, whois);
                 return i;
             }
-        resultMatrices.add(generateResultMatrix(x, y, w, h));
+        resultMatrices.add(generateResultMatrix(x, y, w, h, angle));
+        resultMatricesRM.add(whois);
         return resultMatrices.size()-1;
     }
 
-    public static void cleanScaleMatrixID(int id) {
-        scaleMatrices.set(id, null);
-        notNullScaleMatrices--;
+    public static void cleanScaleMatrixID(int id, String whois) {
+        if (rotateScaleMatrices.get(id)==null) {
+            new Exception(whois+" cleanScaleMatrixID "+id).printStackTrace();
+            System.exit(1);
+        }
+
+        if (!whois.equals(rotateScaleMatricesRM.get(id))) {
+            BicycleDebugger.i("ERROR", "ROTATE SCALE CLEAN");
+            BicycleDebugger.i("ERROR", id + " " + whois);
+            BicycleDebugger.i("ERROR", id + " " + rotateScaleMatricesRM.get(id));
+            new Exception().printStackTrace();
+            System.exit(1);
+        }
+
+        rotateScaleMatrices.set(id, null);
+        notNullRotateScaleMatrices--;
     }
 
-    public static void cleanResultMatrixID(int id) {
+    public static void cleanResultMatrixID(int id, String whois) {
+        if (resultMatrices.get(id)==null) {
+            new Exception(whois+" resultMatrices "+id).printStackTrace();
+            System.exit(1);
+        }
+
+        if (!whois.equals(resultMatricesRM.get(id))) {
+            BicycleDebugger.i("ERROR", "RESULT CLEAN");
+            BicycleDebugger.i("ERROR", id+" "+whois);
+            BicycleDebugger.i("ERROR", id+" "+resultMatricesRM.get(id));
+            new Exception().printStackTrace();
+            System.exit(1);
+        }
+
         resultMatrices.set(id, null);
         notNullResultMatrices--;
     }
@@ -494,7 +542,7 @@ public class Graphic {
     //Внутренние методы для отрисовки совсем уж не статичных объектов
     //Или же для тех компонент, которых не хватает в перемноженых
     private static void setScaleMatrix(float w, float h) {
-       rotateScaleMatrix =generateScaleMatrix(w, h);
+        rotateScaleMatrix =generateScaleMatrix(w, h);
     }
 
     private static void setTranslationMatrix(float x, float y) {
@@ -562,20 +610,6 @@ public class Graphic {
     private static void drawBindedBitmap(float x, float y, float r, float g, float b, float a) {
         bindColor(r, g, b, a);
         drawBindedBitmap(x, y);
-    }
-
-    public static void drawRect(float r, float g, float b, float a) {
-        fillColorShader.setMatrix(resultMatrix,0);
-        fillColorShader.setColor(r,g,b,a);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    }
-
-    public static void drawRect(float x, float y, float width, float height,
-                                float r, float g, float b, float a) {
-        setScaleMatrix(width, height);
-        setTranslationMatrix(x, y);
-        applyTranslationAndScale();
-        drawRect(r, g, b, a);
     }
 
 }

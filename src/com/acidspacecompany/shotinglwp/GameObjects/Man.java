@@ -1,9 +1,11 @@
 package com.acidspacecompany.shotinglwp.GameObjects;
 
+import com.acidspacecompany.shotinglwp.BicycleDebugger;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.Geometry.Rectangle;
 import com.acidspacecompany.shotinglwp.Geometry.Segment;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
+import com.acidspacecompany.shotinglwp.World;
 
 public class Man extends Rectangle implements GameObject{
 
@@ -39,8 +41,16 @@ public class Man extends Rectangle implements GameObject{
         return health>0;
     }
 
+    private boolean disposed=false;
     public void dispose() {
-        Graphic.cleanScaleMatrixID(rotateScaleMatrix);}
+        if (disposed) {
+            BicycleDebugger.e("Man.dispose", "ALREADY DISPOSED!");
+            new Exception().printStackTrace();
+            System.exit(1);
+        }
+        disposed=true;
+        Graphic.cleanScaleMatrixID(rotateScaleMatrix, "Man");
+    }
 
     public void setIsNoNeededMore(){
         health=-1;
@@ -51,8 +61,13 @@ public class Man extends Rectangle implements GameObject{
     }
 
     public void draw() {
-        Graphic.bindRotateScaleMatrix(rotateScaleMatrix);
-        Graphic.drawBitmap(getX(), getY());
+        Graphic.bindRotateScaleMatrix(rotateScaleMatrix, "Man");
+        try {
+            Graphic.drawBitmap(getX(), getY());
+        }
+        catch (Exception e) {
+            BicycleDebugger.e("Man.draw", "Man.draw exception ,TODO!"); //todo
+        }
     }
 
     public void setTarget(Point p) {
@@ -62,16 +77,20 @@ public class Man extends Rectangle implements GameObject{
         reMatrix();
     }
 
+    public void shot() {
+        World.shot(this, angle);
+    }
+
     public boolean getIsIntersect(Segment s) {
         if (widthPow2 < s.getSquaredLengthToLine(this)) return false;
 
-        if (s.getAngleInStartIsAcute(this))
+        /*if (s.getAngleInStartIsAcute(this))
         return widthPow2 >=s.getStart().getSquaredDistanceToPoint(this);
 
         if (s.getAngleInEndIsAcute(this))
-        return widthPow2 >=s.getEnd().getSquaredDistanceToPoint(this);
+        return widthPow2 >=s.getEnd().getSquaredDistanceToPoint(this);*/
 
-        return true;
+        return (s.getIsBetween(this));
     }
 
     public int getBlockX() {
@@ -98,14 +117,15 @@ public class Man extends Rectangle implements GameObject{
     public Man(float x, float y, int w, float speed) {
         super(x, y, w, w);
         width2=w/2;
-        widthPow2=w*w;
+        widthPow2=w*w*4;
         this.speed=speed;
         setTarget(new Point(50, 50));
     }
 
     public void reMatrix() {
         if (rotateScaleMatrix!=-1)
-        Graphic.cleanScaleMatrixID(rotateScaleMatrix);
-        rotateScaleMatrix=Graphic.getRotateScaleMatrixID(width2, width2, (float) Math.toDegrees(angle));
+        Graphic.cleanScaleMatrixID(rotateScaleMatrix, "Man");
+        rotateScaleMatrix=Graphic.getRotateScaleMatrixID(width2, width2,
+                (float) Math.toDegrees(angle), "Man");
     }
 }

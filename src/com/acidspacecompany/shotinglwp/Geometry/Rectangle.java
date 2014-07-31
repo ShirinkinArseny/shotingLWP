@@ -13,7 +13,7 @@ public class Rectangle extends ConvexPolygon{
         return h2;
     }
 
-    public Rectangle(float x, float y, int w, int h, float angle) {
+    public Rectangle(float x, float y, float w, float h, float angle) {
         super(new Point[]{
                 new Point(x+w, y-h).getRotated(angle, x, y),
                 new Point(x+w, y+h).getRotated(angle, x, y),

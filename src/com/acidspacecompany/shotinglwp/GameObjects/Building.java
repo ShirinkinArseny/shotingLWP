@@ -5,11 +5,11 @@ import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 
 public class Building extends Rectangle implements GameObject{
 
-    private int matrix;
+    private int matrix=-1;
     private float angle;
 
     public void draw() {
-        Graphic.bindResultMatrix(matrix);
+        Graphic.bindResultMatrix(matrix, "Building");
         Graphic.drawBitmap();
     }
 
@@ -20,7 +20,7 @@ public class Building extends Rectangle implements GameObject{
 
     @Override
     public void dispose() {
-
+        Graphic.cleanResultMatrixID(matrix, "Building");
     }
 
     @Override
@@ -33,8 +33,9 @@ public class Building extends Rectangle implements GameObject{
     }
 
     public void reMatrix() {
-        Graphic.cleanResultMatrixID(matrix);
-        matrix=Graphic.getResultMatrixID(getX(), getY(), getW(), getH(), angle);
+        if (matrix!=-1)
+        Graphic.cleanResultMatrixID(matrix, "Building");
+        matrix=Graphic.getResultMatrixID(getX(), getY(), getW(), getH(), angle, "Building");
     }
 
     @Override
@@ -45,6 +46,6 @@ public class Building extends Rectangle implements GameObject{
     public Building(float x, float y, int w, int h, float angle) {
         super(x, y, w, h, angle);
         this.angle= 90+(float) Math.toDegrees(angle);
-        matrix=Graphic.getResultMatrixID(x, y, w, h, this.angle);
+        reMatrix();
     }
 }
