@@ -15,7 +15,7 @@ public class Building extends Rectangle implements GameObject{
 
     @Override
     public void prepareToDraw() {
-        Graphic.bindColor(1, 1, 1, 1);
+        Graphic.bindColor(1, 1, 1, 0.3f);
     }
 
     @Override
@@ -47,5 +47,11 @@ public class Building extends Rectangle implements GameObject{
         super(x, y, w, h, angle);
         this.angle= 90+(float) Math.toDegrees(angle);
         reMatrix();
+    }
+
+    @Deprecated
+    public Building(float x, float y, int w, int h) {
+        super(x, y, w, h, 0);
+        this.angle= 90+(float) Math.toDegrees(angle);
     }
 }

@@ -14,6 +14,12 @@ public class Segment {
     private float maxx;
     private float maxy;
 
+    public Point getNormal() {
+        float a1 = end.y - start.y;
+        float b1 = start.x - end.x;
+        return new Point(a1, b1);
+    }
+
     public float getSide(Point point) {
         return point.getX()* dy
                 -  point.getY()* dx + sxsydxdy;

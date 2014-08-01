@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import com.acidspacecompany.shotinglwp.GameObjects.*;
 import com.acidspacecompany.shotinglwp.Geometry.ConvexPolygon;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
@@ -30,6 +31,7 @@ public class World {
     private static LinkedList<Explosion> explosions = new LinkedList<>();
     private static LinkedList<Smoke> smoke = new LinkedList<>();
     private static LinkedList<Extinction> lights = new LinkedList<>();
+    private static LinkedList<Extinction> explosionLights = new LinkedList<>();
     private static HashSet<Man>[] visibleMen = new HashSet[]{new HashSet(), new HashSet()};
     private static final Random rnd = new Random();
     private static final float squaredVisibleDistance = 40000;
@@ -42,10 +44,18 @@ public class World {
     private int bulletID;
     private int bloodID;
     private int lightsID;
+    private int explosionLightsID;
     private int explosionID;
     private int smokeID;
     private static final float bulletDamage=0.3f;
-    private static final int explosionRadius=50;
+    private static final float bulletLength=40;
+    private static final float bulletSpeed=500;
+    private static final float bloodSize=30;
+    private static final float lightSize=60;
+    private static final int manSize=20;
+    private static final int manSpeed=50;
+    private static final int explosionRadius=40;
+    private static final int explosionRadius4=explosionRadius*4;
     private static final int explosionRadius13= (int) (explosionRadius*1.3f);
     private static final int explosionRadius_2=explosionRadius/2;
     private static final int explosionRadius_4=explosionRadius/4;
@@ -74,14 +84,14 @@ public class World {
             if (d>explosionRadius) continue;
             m.damage((float) (1 - d / explosionRadius));
         }
+        explosionLights.add(new Extinction(p.getX(), p.getY(), explosionRadius4, 0.4f));
         smoke.add(new Smoke(p.getX(), p.getY(), explosionRadius13, 1f));
         for (int i=0; i<10; i++)  {
 
             float x=p.getX()-explosionRadius_2+rnd.nextInt(explosionRadius);
             float y=p.getY()-explosionRadius_2+rnd.nextInt(explosionRadius);
 
-            explosions.add(new Explosion(x, y, explosionRadius_4_13, 0.2f));
-
+            explosions.add(new Explosion(x, y, explosionRadius_4, 0.2f));
             smoke.add(new Smoke(x, y,explosionRadius_4_13, 1f));
 
         }
@@ -89,7 +99,7 @@ public class World {
     }
 
     public static void shot(float x, float y, float angle) {
-        Bullet b = new Bullet(x, y, 40, angle, 500);
+        Bullet b = new Bullet(x, y, bulletLength, angle+(rnd.nextFloat()-0.5f)/4, bulletSpeed);
         makeLight(b);
         bulls.add(b);
     }
@@ -99,11 +109,11 @@ public class World {
     }
 
     public void makeBlood(Bullet b) {
-        blood.add(new Blood(b.getEnd().getX(), b.getEnd().getY(), 30f, 1f));
+        blood.add(new Blood(b.getEnd().getX(), b.getEnd().getY(), bloodSize, 1f));
     }
 
     public static void makeLight(Bullet b) {
-        lights.add(new Extinction(b.getStart().getX(), b.getStart().getY(), 60f, 0.2f));
+        lights.add(new Extinction(b.getStart().getX(), b.getStart().getY(), lightSize, 0.2f));
     }
 
     private void addMan(Man m, int team) {
@@ -115,20 +125,29 @@ public class World {
         res = context.getResources();
 
         for (int i = 0; i < 100; i++)
-            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), 20, 50), i % 2);
+            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), i % 2);
 
         Buildings.init(displayWidth, displayHeight);
-        Buildings.addBarrier(new Building(270,
-                200, 60, 20, 0));
-        Buildings.addBarrier(new Building(270,
-                300, 60, 20, 0));
+        Buildings.addBarrier(new Building(240,
+                80, 60, 30, 0));
+        Buildings.addBarrier(new Building(240,
+                200, 60, 30, 0));
+        Buildings.addBarrier(new Building(240,
+                320, 60, 30, 0));
+        Buildings.addBarrier(new Building(560,
+                80, 60, 30, 0));
+        Buildings.addBarrier(new Building(560,
+                200, 60, 30, 0));
+        Buildings.addBarrier(new Building(560,
+                320, 60, 30, 0));
         Buildings.finishAddingBarriers();
     }
 
     public void init() {
         DisplayMetrics metrics = res.getDisplayMetrics();
-        pictureSizeCoef = Math.max(metrics.widthPixels, metrics.heightPixels) / 1100f;
+        pictureSizeCoef = Math.max(metrics.widthPixels, metrics.heightPixels) / 800f;
 
+        //todo: sizes
         Bitmap background = getScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.background),
                 (int) getScaledValue(256));
         backgroundID = Graphic.genTexture(background);
@@ -156,6 +175,10 @@ public class World {
         Bitmap light = getScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.light),
                 (int) getScaledValue(256));
         lightsID = Graphic.genTexture(light);
+
+        Bitmap explosionLight = getScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.explosionlight),
+                (int) getScaledValue(256));
+        explosionLightsID = Graphic.genTexture(explosionLight);
 
         Bitmap explosion = getScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.explosion),
                 (int) getScaledValue(256));
@@ -270,12 +293,10 @@ public class World {
                 b.setIsNoNeededMore();
 
             else {
-                int index = getNearestMenIndex(b.getStart().getX());
-                int target = getNearestMenIndex(b.getEnd().getX());
 
                 if (b.getDx() > 0) {
-                    index= Math.max(0, index-1);
-                    target = Math.min(target + 1, men.size() - 1);
+                    int index = getNearestMenIndex(b.getStart().getX()-bulletLength);
+                    int target = getNearestMenIndex(b.getEnd().getX()+bulletLength);
                     for (int i = index; i < target; i++) {
                         if (men.get(i).getIsIntersect(b)) {
                             men.get(i).damage(bulletDamage);
@@ -285,8 +306,8 @@ public class World {
                         }
                     }
                 } else {
-                    index= Math.min(index + 1, men.size() - 1);
-                    target = Math.max(0, target - 1);
+                    int target = getNearestMenIndex(b.getStart().getX()-bulletLength);
+                    int index = getNearestMenIndex(b.getEnd().getX()+bulletLength);
                     for (int i = target; i < index; i++) {
                         if (men.get(i).getIsIntersect(b)) {
                             men.get(i).damage(bulletDamage);
@@ -305,7 +326,8 @@ public class World {
             if (!((GameObject) objects.get(i)).getIsNeeded()) {
                 ((GameObject) objects.get(i)).dispose();
                 objects.remove(i);
-                if (i>0) i--;
+                //if (i>0) i--;
+                i=0;//OVERKILL MOTHERFUCKER
             }
         }
     }
@@ -369,13 +391,13 @@ public class World {
         }
     }
 
-    private float angle = 0;
+    //private float angle = 0;
     public void updateAI(float dt) {
-        if (rnd.nextInt(3) == 0) {
-            shot(400, 240, angle);
-        }
-        angle += 0.05f;
-        if (rnd.nextInt(20) == 0)
+        //if (rnd.nextInt(3) == 0) {
+        //    shot(400, 240, angle);
+        //}
+        //angle += 0.01f;
+        if (rnd.nextInt(30) == 0)
             addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), 20, 50), rnd.nextInt(2));
 
 
@@ -385,20 +407,22 @@ public class World {
             updateVisibility();
         }
         for (Man m: men) {
-            if (rnd.nextInt(100) == 0)
+            if (rnd.nextInt(50) == 0)
                 m.setTarget(new Point(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight)));
-            if (rnd.nextInt(100) == 0)
-                m.shot();
+            else
+                if (m.getVisibleMan()!=null) {
+                    if (rnd.nextInt(25)==0) {
+                        m.setTarget(m.getVisibleMan());
+                    }
+                    else {
+                        m.stopAndSetAngle(m.getVisibleMan());
+                        m.shot();
+                    }
+                }
         }
     }
 
     public void update(float dt) {
-        /*---   men   ---*/
-        updateGameObjects(men, dt);
-        removeUnusedGameObjects(men);
-        removeUnusedGameObjectsWithoutDispose(teamedMen[0]);
-        removeUnusedGameObjectsWithoutDispose(teamedMen[1]);
-        sortPeople();
         /*---   bullets   ---*/
         updateGameObjects(bulls, dt);
         checkManAndBulletsForIntersection();
@@ -410,6 +434,9 @@ public class World {
         /*---   lights   ---*/
         updateGameObjects(lights, dt);
         removeUnusedGameObjects(lights);
+        /*---   explosionlights   ---*/
+        updateGameObjects(explosionLights, dt);
+        removeUnusedGameObjects(explosionLights);
         /*---   explosions   ---*/
         updateGameObjects(explosions, dt);
         removeUnusedGameObjects(explosions);
@@ -418,6 +445,30 @@ public class World {
         removeUnusedGameObjects(smoke);
         /*---   spawn   ---*/
         updateAI(dt);
+        /*---   men   ---*/
+        updateGameObjects(men, dt);
+        sortPeople();
+        removeUnusedGameObjects(men);
+        for (Man m: men) {
+            if (!m.getIsNeeded()) {
+                Log.e("Update0", "DEAD ALIVE MAN, FUUUUUCK!");
+                new Exception().printStackTrace();
+                Log.e("Update0", m.toString());
+                Log.e("Update0", m.toString());
+                System.exit(1);
+            }
+        }
+        removeUnusedGameObjectsWithoutDispose(teamedMen[0]);
+        removeUnusedGameObjectsWithoutDispose(teamedMen[1]);
+        for (Man m: men) {
+            if (!m.getIsNeeded()) {
+                Log.e("Update", "DEAD ALIVE MAN, FUUUUUCK!");
+                new Exception().printStackTrace();
+                Log.e("Update", m.toString());
+                Log.e("Update", m.toString());
+                System.exit(1);
+            }
+        }
     }
 
     private void drawBgLayer() {
@@ -443,9 +494,10 @@ public class World {
             drawGameObjectLayer(blood, bloodID);
         Graphic.begin(Graphic.Mode.DRAW_BITMAPS);
             drawGameObjectLayer(lights, lightsID);
+            drawGameObjectLayer(explosionLights, explosionLightsID);
+            drawGameObjectLayer(bulls, bulletID);
             drawGameObjectLayer(teamedMen[0], redID);
             drawGameObjectLayer(teamedMen[1], blueID);
-            drawGameObjectLayer(bulls, bulletID);
         Graphic.begin(Graphic.Mode.DRAW_THRESHOLD_BITMAP);
             drawGameObjectLayer(explosions, explosionID);
         Graphic.begin(Graphic.Mode.DRAW_BITMAPS);

@@ -12,7 +12,9 @@ public class Background implements GameObject{
     public void reMatrix() {
         if (resultMatrix!=-1)
             Graphic.cleanResultMatrixID(resultMatrix, "Background");
-        resultMatrix=Graphic.getResultMatrixID(0, 0, World.getDisplayWidth(), World.getDisplayHeight(), "Background");
+        resultMatrix=Graphic.getResultMatrixID(
+                World.getDisplayWidth()/2, World.getDisplayHeight()/2,
+                World.getDisplayWidth()/2, World.getDisplayHeight()/2,"Background");
         BicycleDebugger.i("WH", World.getDisplayWidth()+" "+World.getDisplayHeight());
     }
 
@@ -21,6 +23,7 @@ public class Background implements GameObject{
     }
 
     public void draw() {
+        Graphic.bindColor(1, 1, 1, 1);
         Graphic.bindResultMatrix(resultMatrix, "Background");
         Graphic.drawBitmap();
     }

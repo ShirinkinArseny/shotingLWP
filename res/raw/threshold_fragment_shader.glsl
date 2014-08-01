@@ -32,5 +32,5 @@ void main()
         }
     }
     gl_FragColor.a = src;
-    gl_FragColor.rgb *= src/1.3;
+    gl_FragColor.rgb *= src;///1.3;
 }

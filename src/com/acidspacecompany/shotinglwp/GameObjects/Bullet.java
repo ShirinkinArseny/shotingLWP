@@ -14,6 +14,7 @@ public class Bullet extends Segment implements GameObject{
 
     public void dispose() {
         Graphic.cleanScaleMatrixID(rotateScaleMatrix, "Bullet");
+        //BicycleDebugger.i("BULLET.dispose", "Droppd " + rotateScaleMatrix);
     }
 
     public void setIsNoNeededMore(){
@@ -31,6 +32,7 @@ public class Bullet extends Segment implements GameObject{
             Graphic.cleanScaleMatrixID(rotateScaleMatrix, "Bullet");
         rotateScaleMatrix =Graphic.getRotateScaleMatrixID(
                 length, length, (float) Math.toDegrees(angle), "Bullet");
+        //BicycleDebugger.i("BULLET.reMatrix", "Gotta "+rotateScaleMatrix);
     }
 
     @Override

@@ -20,6 +20,8 @@ public class Man extends Rectangle implements GameObject{
     private int blockY=0;
     private Man visibleMan;
     private int rotateScaleMatrix=-1;
+    private float time=0;
+    private float timeLimit=0.3f;
 
     public void cleanVisibility(){
         visibleMan=null;
@@ -38,7 +40,7 @@ public class Man extends Rectangle implements GameObject{
     }
 
     public boolean getIsNeeded() {
-        return health>0;
+        return health>=0;
     }
 
     private boolean disposed=false;
@@ -50,10 +52,10 @@ public class Man extends Rectangle implements GameObject{
         }
         disposed=true;
         Graphic.cleanScaleMatrixID(rotateScaleMatrix, "Man");
+        //BicycleDebugger.i("MAN.dispose", "Droppd " + rotateScaleMatrix);
     }
 
     public void setIsNoNeededMore(){
-        health=-1;
     }
 
     public void prepareToDraw() {
@@ -61,13 +63,13 @@ public class Man extends Rectangle implements GameObject{
     }
 
     public void draw() {
+        if (disposed) {
+            BicycleDebugger.e("MAN.DRAW", "Man is already disposed, u CAN'T draw it!"); //todo
+            new Exception().printStackTrace();
+        }
+        else {
         Graphic.bindRotateScaleMatrix(rotateScaleMatrix, "Man");
-        try {
-            Graphic.drawBitmap(getX(), getY());
-        }
-        catch (Exception e) {
-            BicycleDebugger.e("Man.draw", "Man.draw exception ,TODO!"); //todo
-        }
+        Graphic.drawBitmap(getX(), getY());         }
     }
 
     public void setTarget(Point p) {
@@ -77,8 +79,18 @@ public class Man extends Rectangle implements GameObject{
         reMatrix();
     }
 
+    public void stopAndSetAngle(Point p) {
+        angle= (float) Math.atan2(p.getY()-getY(), p.getX()-getX());
+        sinSpeed=0;
+        cosSpeed=0;
+        reMatrix();
+    }
+
     public void shot() {
-        World.shot(this, angle);
+        if (time<=0) {
+            World.shot(this, angle);
+            time+=timeLimit;
+        }
     }
 
     public boolean getIsIntersect(Segment s) {
@@ -104,14 +116,20 @@ public class Man extends Rectangle implements GameObject{
     public void update(float dt) {
         float dx=dt*cosSpeed;
         float dy=dt*sinSpeed;
-        int newBlockX= Buildings.getXBlock(getX() + dx);
-        int newBlockY= Buildings.getYBlock(getY() + dy);
-        if (Buildings.getContainsPotentialBarriers(blockX, blockY)) {
-            return;
+        Segment s=new Segment(getX(), getY(), getX() + dx, getY() + dy);
+        for (Building b: Buildings.getPotentialBarriers(getX() + dx, getY() + dy))
+        {
+              for (Segment s2: b.getSegments())  {
+                  Point intr=s.getIntersection(s);
+                  if (intr!=null) {
+                      move(s2.getNormal().multiply(s2.getSide(this)));
+                  }
+              }
         }
-        blockX=newBlockX;
-        blockY=newBlockY;
+        blockX= (int) (s.getEnd().getX());
+        blockY= (int) (s.getEnd().getY());
         move(dx, dy);
+        if (time>0) time-=dt;
     }
 
     public Man(float x, float y, int w, float speed) {
@@ -127,5 +145,6 @@ public class Man extends Rectangle implements GameObject{
         Graphic.cleanScaleMatrixID(rotateScaleMatrix, "Man");
         rotateScaleMatrix=Graphic.getRotateScaleMatrixID(width2, width2,
                 (float) Math.toDegrees(angle), "Man");
+        //BicycleDebugger.i("MAN.reMatrix", "Gotta "+rotateScaleMatrix);
     }
 }

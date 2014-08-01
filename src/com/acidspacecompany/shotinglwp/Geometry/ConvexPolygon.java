@@ -1,11 +1,9 @@
 package com.acidspacecompany.shotinglwp.Geometry;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class ConvexPolygon extends Point{
+public class ConvexPolygon extends Point {
 
     private ArrayList<Segment> segments = new ArrayList<>();
     private ArrayList<Point> points = new ArrayList<>();
@@ -20,8 +18,8 @@ public class ConvexPolygon extends Point{
     }
 
     //Slow method - a little bit slower than faster
+    @Deprecated
     public boolean intersectByPointContainment(ConvexPolygon c) {
-        Log.i("intersectByPointContainment", "Using slow method!");
         for (Point p : points)
             if (c.containsBySegmentSide(p)) return true;
         for (Point p : c.points)
@@ -48,9 +46,10 @@ public class ConvexPolygon extends Point{
     }
 
     //Slow method - about 100 times slower than fast method
+    @Deprecated
     private static final float Pi2 = (float) (Math.PI * 2);
+
     public boolean containsByAngleSummary(Point point) {
-        Log.i("containsByAngleSummary", "Using slow method!");
         float angle = 0;
         for (Segment s : segments) {
             angle += Math.acos(Utils.getCos(s.getStart(), point, s.getEnd()));
@@ -60,23 +59,24 @@ public class ConvexPolygon extends Point{
 
     //fast
     public boolean intersectsBySegmentIntersection(Segment s) {
-        for (Segment s2: getSegments())
-            if (s.getIntersects(s2))
+        for (Segment s2 : getSegments()) {
+            if (s.getIntersects(s2)) {
                 return true;
+            }
+        }
         return false;
     }
 
     //slow
+    @Deprecated
     public boolean intersectsByPointContainment(Segment s) {
-        Log.i("intersectsByPointContainment", "Using slow method!");
         return containsBySegmentSide(s.getEnd()) || containsBySegmentSide(s.getStart());
     }
 
     public void rotate(float angle) {
-        for (Point p: points)
+        for (Point p : points)
             p.rotate(angle, this);
-        for (Segment p: segments)
-        {
+        for (Segment p : segments) {
             p.getStart().rotate(angle, this);
             p.getEnd().rotate(angle, this);
         }
@@ -107,7 +107,7 @@ public class ConvexPolygon extends Point{
     }
 
     private static Point getCenter(Point[] vertexes) {
-        Point centre=new Point(0, 0);
+        Point centre = new Point(0, 0);
         for (Point vertex : vertexes) {
             centre.move(vertex);
         }
@@ -115,9 +115,9 @@ public class ConvexPolygon extends Point{
     }
 
     public void move(float dx, float dy) {
-        for (Segment s: segments)
+        for (Segment s : segments)
             s.move(dx, dy);
-        for (Point p: points)
+        for (Point p : points)
             p.move(dx, dy);
         super.move(dx, dy);
     }

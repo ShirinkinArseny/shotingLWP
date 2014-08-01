@@ -51,15 +51,26 @@ public class Buildings {
         return blockHeight;
     }
 
-    //Возвращает соединённость двух квадратов
-    public static boolean getConnected(int x0, int y0, int x1, int y1) {
-        Segment s=new Segment(x0, y0, x1, y1);
+    //Возвращает соединённость двух точек
+    public static boolean getConnected(float x2, float y2, float x3, float y3) {
+        int x0=getXBlock(x2);
+        int y0=getYBlock(y2);
+        int x1=getXBlock(x3);
+        int y1=getYBlock(y3);
         if (x0 >= horizontalCount || x0 < 0) return false;
         if (y0 >= verticalCount || y0 < 0) return false;
         if (x1 >= horizontalCount || x1 < 0) return false;
         if (y1 >= verticalCount || y1 < 0) return false;
 
 
+        Segment s2=new Segment(x2, y2, x3, y3);
+        for (Building b: getBarriers()) {
+            if (b.intersectsBySegmentIntersection(s2)) return false;
+        }
+
+        //todo: u know
+        /*
+        Segment s=new Segment(x0, y0, x1, y1);
         float l=s.getLength();
         float x=x0;
         float y=y0;
@@ -67,10 +78,15 @@ public class Buildings {
         float dy=(y1-y0)/l;
         for (int i=0; i<l; i++) {
             if (barriersInCellsContains[((int) x)][((int) y)])
-                return false;
+            {
+                for (Building b: barriersInCells[((int) x)][((int) y)]) {
+                    if (b.intersectsBySegmentIntersection(s2))
+                        return false;
+                }
+            }
             x+=dx;
             y+=dy;
-        }
+        }*/
 
         return true;
     }
