@@ -1,5 +1,6 @@
 package com.acidspacecompany.shotinglwp.GameObjects;
 
+import com.acidspacecompany.shotinglwp.ArtificialIntelligence.ManAI;
 import com.acidspacecompany.shotinglwp.BicycleDebugger;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.Geometry.Rectangle;
@@ -13,6 +14,7 @@ import java.util.LinkedList;
 
 public class Man extends Rectangle implements GameObject{
 
+    private ManAI brain=new ManAI(this);
     private float width2;
     private float widthPow2;
     private float angle;
@@ -28,6 +30,10 @@ public class Man extends Rectangle implements GameObject{
     private float bulletTimeLimit =0.1f;
     private float rocketTime =0;
     private float rocketTimeLimit =10f;
+
+    public ManAI getBrains() {     //thnx for fr8 IDE
+        return brain;
+    }
 
     private Man thisMan=this;
     private Comparator<? super Man> comparator=new Comparator<Man>() {

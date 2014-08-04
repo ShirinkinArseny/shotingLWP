@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import com.acidspacecompany.shotinglwp.ArtificialIntelligence.AIBase;
 import com.acidspacecompany.shotinglwp.GameObjects.Background;
 import com.acidspacecompany.shotinglwp.GameObjects.Building;
 import com.acidspacecompany.shotinglwp.GameObjects.Buildings;
@@ -41,6 +42,7 @@ public class World {
     private static LinkedList<Bullet> bullets = new LinkedList<>();
     private static LinkedList<Rocket> rockets = new LinkedList<>();
     private static HashSet<Man>[] visibleMen = new HashSet[]{new HashSet(), new HashSet()};
+    private static AIBase[] ais=new AIBase[2];
     private static final Random rnd = new Random();
     private static final float squaredVisibleDistance = 40000;
     private static Resources res;
@@ -62,7 +64,7 @@ public class World {
     public static final float bloodSize=20;
     public static final float lightSize=30;
     public static final int manSize=18;
-    public static final int manSpeed=20;
+    public static final int manSpeed=40;
     public static final int explosionRadius=35;
     public static final int explosionRadius4=explosionRadius*4;
     public static final int explosionRadius13= (int) (explosionRadius*1.3f);
@@ -152,6 +154,9 @@ public class World {
         Buildings.addBarrier(new Building(560,
                 320, 60, 30, 0));
         Buildings.finishAddingBarriers();
+
+        ais[0]=new AIBase(teamedMen[0], visibleMen[1]);
+        ais[1]=new AIBase(teamedMen[1], visibleMen[0]);
     }
 
     public void init() {
@@ -345,21 +350,8 @@ public class World {
             timer -= timerLimit;
             updateVisibility();
         }
-        for (Man m: men) {
-            if (rnd.nextInt(50) == 0)
-                m.setTarget(new Point(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight)));
-            else
-                if (m.getVisibleMan()!=null) {
-                        if (rnd.nextInt(25) == 0) {
-                            m.setTarget(m.getVisibleMan());
-                        } else {
-                            m.stopAndSetAngle(m.getVisibleMan());
-                            if (m.canShot())
-                            m.shot();
-                            else if (m.canLaunchRocket())
-                                m.launchRocket(m.getVisibleMan());
-                        }
-                }
+        for (AIBase ai : ais) {
+            ai.update(dt);
         }
     }
 

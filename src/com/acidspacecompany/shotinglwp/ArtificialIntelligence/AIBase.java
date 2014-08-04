@@ -1,11 +1,10 @@
 package com.acidspacecompany.shotinglwp.ArtificialIntelligence;
 
 import com.acidspacecompany.shotinglwp.GameObjects.Man;
-import com.acidspacecompany.shotinglwp.Geometry.Point;
-import com.acidspacecompany.shotinglwp.World;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class AIBase {
 
@@ -13,13 +12,7 @@ public class AIBase {
 
     private float timer;
 
-
-
-    public static void init() {
-
-    }
-
-    public AIBase(List<Man> ourTeam, List<Man> visibleEnemies) {
+    public AIBase(List<Man> ourTeam, Set<Man> visibleEnemies) {
 
     }
 
