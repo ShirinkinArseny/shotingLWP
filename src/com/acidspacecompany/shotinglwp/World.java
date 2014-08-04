@@ -123,6 +123,10 @@ public class World {
         rockets.add(b);
     }
 
+    public void addMan() {
+        addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), rnd.nextInt(2));
+    }
+
     private void addMan(Man m, int team) {
         men.add(m);
         teamedMen[team].add(m);
