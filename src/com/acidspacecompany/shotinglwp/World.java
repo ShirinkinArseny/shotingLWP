@@ -6,12 +6,22 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import com.acidspacecompany.shotinglwp.GameObjects.*;
-import com.acidspacecompany.shotinglwp.Geometry.ConvexPolygon;
+import com.acidspacecompany.shotinglwp.GameObjects.Background;
+import com.acidspacecompany.shotinglwp.GameObjects.Building;
+import com.acidspacecompany.shotinglwp.GameObjects.Buildings;
+import com.acidspacecompany.shotinglwp.GameObjects.Effects.EffectsLayer;
+import com.acidspacecompany.shotinglwp.GameObjects.Man;
+import com.acidspacecompany.shotinglwp.GameObjects.Shells.Bullet;
+import com.acidspacecompany.shotinglwp.GameObjects.Shells.Rocket;
+import com.acidspacecompany.shotinglwp.GameObjects.Shells.Shell;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
+import com.acidspacecompany.shotinglwp.Network.NetworkDebugger;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 
 import java.util.*;
+
+import static com.acidspacecompany.shotinglwp.DefaultUpdateDrawMethods.*;
+import static com.acidspacecompany.shotinglwp.GameObjects.Effects.EffectsLayer.*;
 
 public class World {
 
@@ -21,17 +31,15 @@ public class World {
     private static float timer = 0;
     private static final float timerLimit = 2f;
 
+    private static boolean playing=true;/* TODO: DEBUG */
+
     private boolean active = true;//is working
     private long lastTime;
     private static Background background=new Background();
     private static LinkedList<Man> men = new LinkedList<>();
     private static LinkedList<Man>[] teamedMen = new LinkedList[]{new LinkedList(), new LinkedList()};
-    private static LinkedList<Bullet> bulls = new LinkedList<>();
-    private static LinkedList<Blood> blood = new LinkedList<>();
-    private static LinkedList<Explosion> explosions = new LinkedList<>();
-    private static LinkedList<Smoke> smoke = new LinkedList<>();
-    private static LinkedList<Extinction> lights = new LinkedList<>();
-    private static LinkedList<Extinction> explosionLights = new LinkedList<>();
+    private static LinkedList<Bullet> bullets = new LinkedList<>();
+    private static LinkedList<Rocket> rockets = new LinkedList<>();
     private static HashSet<Man>[] visibleMen = new HashSet[]{new HashSet(), new HashSet()};
     private static final Random rnd = new Random();
     private static final float squaredVisibleDistance = 40000;
@@ -42,24 +50,26 @@ public class World {
     private int blueID;
     private int houseID;
     private int bulletID;
+    private int rocketID;
     private int bloodID;
     private int lightsID;
     private int explosionLightsID;
     private int explosionID;
     private int smokeID;
-    private static final float bulletDamage=0.3f;
-    private static final float bulletLength=40;
-    private static final float bulletSpeed=500;
-    private static final float bloodSize=30;
-    private static final float lightSize=60;
-    private static final int manSize=20;
-    private static final int manSpeed=50;
-    private static final int explosionRadius=40;
-    private static final int explosionRadius4=explosionRadius*4;
-    private static final int explosionRadius13= (int) (explosionRadius*1.3f);
-    private static final int explosionRadius_2=explosionRadius/2;
-    private static final int explosionRadius_4=explosionRadius/4;
-    private static final int explosionRadius_4_13=(int) (explosionRadius_4*1.3f);
+    public static final float shellDamage =0.2f;
+    public static final float bulletLength=80;
+    public static final float bulletSpeed=500;
+    public static final float bloodSize=20;
+    public static final float lightSize=30;
+    public static final int manSize=18;
+    public static final int manSpeed=20;
+    public static final int explosionRadius=35;
+    public static final int explosionRadius4=explosionRadius*4;
+    public static final int explosionRadius13= (int) (explosionRadius*1.3f);
+    public static final int explosionRadius_2=explosionRadius/2;
+    public static final int explosionRadius_4=explosionRadius/4;
+    public static final int explosionRadius_4_13=(int) (explosionRadius_4*1.3f);
+    private static NetworkDebugger nwd=new NetworkDebugger();
 
     public static int getDisplayWidth() {
         return displayWidth;
@@ -77,43 +87,40 @@ public class World {
         return pictureSizeCoef * value;
     }
 
-
     public static void explode(Point p) {
         for (Man m: men) {
             double d=m.getDistanceToPoint(p);
             if (d>explosionRadius) continue;
             m.damage((float) (1 - d / explosionRadius));
         }
-        explosionLights.add(new Extinction(p.getX(), p.getY(), explosionRadius4, 0.4f));
-        smoke.add(new Smoke(p.getX(), p.getY(), explosionRadius13, 1f));
+        makeExplosionLight(p, explosionRadius4);
+        makeSmoke(p, explosionRadius13);
         for (int i=0; i<10; i++)  {
 
-            float x=p.getX()-explosionRadius_2+rnd.nextInt(explosionRadius);
-            float y=p.getY()-explosionRadius_2+rnd.nextInt(explosionRadius);
+            Point tmpPoint=new Point(
+                    p.getX()-explosionRadius_2+rnd.nextInt(explosionRadius),
+                    p.getY()-explosionRadius_2+rnd.nextInt(explosionRadius));
 
-            explosions.add(new Explosion(x, y, explosionRadius_4, 0.2f));
-            smoke.add(new Smoke(x, y,explosionRadius_4_13, 1f));
+            makeExplosion(tmpPoint, explosionRadius_4);
+            makeSmoke(tmpPoint, explosionRadius_4_13);
 
         }
 
     }
 
-    public static void shot(float x, float y, float angle) {
-        Bullet b = new Bullet(x, y, bulletLength, angle+(rnd.nextFloat()-0.5f)/4, bulletSpeed);
-        makeLight(b);
-        bulls.add(b);
-    }
-
     public static void shot(Point p, float angle) {
-        shot(p.getX(), p.getY(), angle);
+        float delta=(rnd.nextFloat()-0.5f)/12;
+        delta=0;
+        Bullet b = new Bullet(p.getX(), p.getY(), bulletLength, angle+delta, bulletSpeed);
+        makeLight(b.getStart(), World.lightSize);
+        bullets.add(b);
     }
 
-    public void makeBlood(Bullet b) {
-        blood.add(new Blood(b.getEnd().getX(), b.getEnd().getY(), bloodSize, 1f));
-    }
-
-    public static void makeLight(Bullet b) {
-        lights.add(new Extinction(b.getStart().getX(), b.getStart().getY(), lightSize, 0.2f));
+    public static void launchRocket(Point p, float angle, Point to) {
+        float delta=(rnd.nextFloat()-0.5f)/12;
+        Rocket b = new Rocket(p.getX(), p.getY(), bulletLength, angle+delta, bulletSpeed, to.getSquaredDistanceToPoint(p));
+        makeLight(b.getStart(), World.lightSize);
+        rockets.add(b);
     }
 
     private void addMan(Man m, int team) {
@@ -124,7 +131,7 @@ public class World {
     public World(Context context) {
         res = context.getResources();
 
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 10; i++)
             addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), i % 2);
 
         Buildings.init(displayWidth, displayHeight);
@@ -168,6 +175,10 @@ public class World {
                 (int) getScaledValue(256));
         bulletID = Graphic.genTexture(bullet);
 
+        Bitmap rocket = getScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.rocket),
+                (int) getScaledValue(256));
+        rocketID = Graphic.genTexture(rocket);
+
         Bitmap blood = getScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.blood),
                 (int) getScaledValue(256));
         bloodID = Graphic.genTexture(blood);
@@ -210,7 +221,7 @@ public class World {
         draw();
     }
 
-    public void resize(int width, int height) {
+    public static void resize(int width, int height) {
         Graphic.resize(width, height);
         displayWidth=width;
         displayHeight=height;
@@ -220,22 +231,11 @@ public class World {
         for (Building m : Buildings.getBarriers()) {
             m.reMatrix();
         }
+        for (Bullet m : bullets) {
+            m.reMatrix();
+        }
+        EffectsLayer.reMatrix();
         background.reMatrix();
-        for (Blood m : blood) {
-            m.reMatrix();
-        }
-        for (Extinction m : lights) {
-            m.reMatrix();
-        }
-        for (Bullet m : bulls) {
-            m.reMatrix();
-        }
-        for (Explosion m : explosions) {
-            m.reMatrix();
-        }
-        for (Smoke m : smoke) {
-            m.reMatrix();
-        }
     }
 
     //Пузырёк в продакшоне :3
@@ -263,30 +263,9 @@ public class World {
         return leftIndex;
     }
 
-    private void checkBuildingsAndBulletsForIntersection() {
-        for (Bullet b : bulls) {
-            if (b.getIsNeeded())
-            for (ConvexPolygon bu : Buildings.getPotentialBarriers(b.getStart().getX(), b.getStart().getY())) {
-                if (bu.containsBySegmentSide(b.getStart())) {
-                    explode(b.getEnd());
-                    b.setIsNoNeededMore();
-                    break;
-                }
-            }
-
-            if (b.getIsNeeded())
-            for (ConvexPolygon bu : Buildings.getPotentialBarriers(b.getEnd().getX(), b.getEnd().getY())) {
-                if (bu.containsBySegmentSide(b.getEnd())) {
-                    explode(b.getEnd());
-                    b.setIsNoNeededMore();
-                    break;
-                }
-            }
-        }
-    }
-
-    private void checkManAndBulletsForIntersection() {
-        for (Bullet b : bulls) {
+    private void checkManAndShellForIntersection(List bullets) {
+        for (Object b2 : bullets) {
+            Shell b=(Shell)b2;
 
             if (b.getStart().getX() < 0 || b.getStart().getX() > displayWidth
                     || b.getStart().getY() < 0 || b.getStart().getY() > displayHeight)
@@ -298,10 +277,10 @@ public class World {
                     int index = getNearestMenIndex(b.getStart().getX()-bulletLength);
                     int target = getNearestMenIndex(b.getEnd().getX()+bulletLength);
                     for (int i = index; i < target; i++) {
-                        if (men.get(i).getIsIntersect(b)) {
-                            men.get(i).damage(bulletDamage);
+                        if (men.get(i).getIsIntersect(b.getMotion())) {
+                            men.get(i).damage(shellDamage);
                             b.setIsNoNeededMore();
-                            makeBlood(b);
+                            makeBlood(men.get(i), bloodSize);
                             break;
                         }
                     }
@@ -309,41 +288,15 @@ public class World {
                     int target = getNearestMenIndex(b.getStart().getX()-bulletLength);
                     int index = getNearestMenIndex(b.getEnd().getX()+bulletLength);
                     for (int i = target; i < index; i++) {
-                        if (men.get(i).getIsIntersect(b)) {
-                            men.get(i).damage(bulletDamage);
+                        if (men.get(i).getIsIntersect(b.getMotion())) {
+                            men.get(i).damage(shellDamage);
                             b.setIsNoNeededMore();
-                            makeBlood(b);
+                            makeBlood(men.get(i), bloodSize);
                             break;
                         }
                     }
                 }
             }
-        }
-    }
-
-    private void removeUnusedGameObjects(List objects) {
-        for (int i = 0; i < objects.size(); i++) {
-            if (!((GameObject) objects.get(i)).getIsNeeded()) {
-                ((GameObject) objects.get(i)).dispose();
-                objects.remove(i);
-                //if (i>0) i--;
-                i=0;//OVERKILL MOTHERFUCKER
-            }
-        }
-    }
-
-    private void removeUnusedGameObjectsWithoutDispose(List objects) {
-        for (int i = 0; i < objects.size(); i++) {
-            if (!((GameObject) objects.get(i)).getIsNeeded()) {
-                objects.remove(i);
-                if (i>0) i--;
-            }
-        }
-    }
-
-    private void updateGameObjects(List objects, float dt) {
-        for (Object go : objects) {
-            ((GameObject) go).update(dt);
         }
     }
 
@@ -356,38 +309,20 @@ public class World {
         visibleMen[0].clear();
         visibleMen[1].clear();
 
-        boolean[] visibility1 = new boolean[teamedMen[0].size()];
-        boolean[] visibility2 = new boolean[teamedMen[1].size()];
-
         for (Man m1 : teamedMen[0]) m1.cleanVisibility();
         for (Man m2 : teamedMen[1]) m2.cleanVisibility();
 
-        int num1 = 0;
-        int num2;
-
         for (Man m1 : teamedMen[0]) {
-            num2 = 0;
             for (Man m2 : teamedMen[1]) {
-                if (!(visibility1[num1] && visibility2[num2]))
                     if (getIsVisible(m1, m2)) {
 
-                        if (!visibility1[num1]) {
                             visibleMen[0].add(m1);
-                            visibility1[num1] = true;
                             m1.addVisibleMan(m2);
-                        }
 
-                        if (!visibility2[num2]) {
                             visibleMen[1].add(m2);
-                            visibility2[num2] = true;
                             m2.addVisibleMan(m1);
-                        }
-
-                        visibility1[num1] = true;
                     }
-                num2++;
             }
-            num1++;
         }
     }
 
@@ -397,8 +332,8 @@ public class World {
         //    shot(400, 240, angle);
         //}
         //angle += 0.01f;
-        if (rnd.nextInt(30) == 0)
-            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), 20, 50), rnd.nextInt(2));
+        if (rnd.nextInt(100) == 0)
+            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), rnd.nextInt(2));
 
 
         timer += dt;
@@ -411,99 +346,105 @@ public class World {
                 m.setTarget(new Point(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight)));
             else
                 if (m.getVisibleMan()!=null) {
-                    if (rnd.nextInt(25)==0) {
-                        m.setTarget(m.getVisibleMan());
-                    }
-                    else {
-                        m.stopAndSetAngle(m.getVisibleMan());
-                        m.shot();
-                    }
+                        if (rnd.nextInt(25) == 0) {
+                            m.setTarget(m.getVisibleMan());
+                        } else {
+                            m.stopAndSetAngle(m.getVisibleMan());
+                            if (m.canShot())
+                            m.shot();
+                            else if (m.canLaunchRocket())
+                                m.launchRocket(m.getVisibleMan());
+                        }
                 }
         }
     }
 
     public void update(float dt) {
+        if (playing) {
+        /* TODO: DEBUG */
         /*---   bullets   ---*/
-        updateGameObjects(bulls, dt);
-        checkManAndBulletsForIntersection();
-        checkBuildingsAndBulletsForIntersection();
-        removeUnusedGameObjects(bulls);
-        /*---   blood   ---*/
-        updateGameObjects(blood, dt);
-        removeUnusedGameObjects(blood);
-        /*---   lights   ---*/
-        updateGameObjects(lights, dt);
-        removeUnusedGameObjects(lights);
-        /*---   explosionlights   ---*/
-        updateGameObjects(explosionLights, dt);
-        removeUnusedGameObjects(explosionLights);
-        /*---   explosions   ---*/
-        updateGameObjects(explosions, dt);
-        removeUnusedGameObjects(explosions);
-        /*---   smoke   ---*/
-        updateGameObjects(smoke, dt);
-        removeUnusedGameObjects(smoke);
+            updateGameObjects(bullets, dt);
+            removeUnusedGameObjects(bullets);
+            checkManAndShellForIntersection(bullets);
+        /*---   rockets   ---*/
+            updateGameObjects(rockets, dt);
+            removeUnusedGameObjects(rockets);
+            checkManAndShellForIntersection(rockets);
         /*---   spawn   ---*/
-        updateAI(dt);
+            updateAI(dt);
         /*---   men   ---*/
-        updateGameObjects(men, dt);
-        sortPeople();
-        removeUnusedGameObjects(men);
-        for (Man m: men) {
-            if (!m.getIsNeeded()) {
-                Log.e("Update0", "DEAD ALIVE MAN, FUUUUUCK!");
-                new Exception().printStackTrace();
-                Log.e("Update0", m.toString());
-                Log.e("Update0", m.toString());
-                System.exit(1);
+            updateGameObjects(men, dt);
+            removeUnusedGameObjects(men);
+            sortPeople();
+            for (Man m : men) {
+                if (!m.getIsNeeded()) {
+                    Log.e("Update0", "DEAD ALIVE MAN, FUUUUUCK!");
+                    new Exception().printStackTrace();
+                    Log.e("Update0", m.toString());
+                    Log.e("Update0", m.toString());
+                    System.exit(1);
+                }
             }
+            removeUnusedGameObjectsWithoutDispose(teamedMen[0]);
+            removeUnusedGameObjectsWithoutDispose(teamedMen[1]);
         }
-        removeUnusedGameObjectsWithoutDispose(teamedMen[0]);
-        removeUnusedGameObjectsWithoutDispose(teamedMen[1]);
-        for (Man m: men) {
-            if (!m.getIsNeeded()) {
-                Log.e("Update", "DEAD ALIVE MAN, FUUUUUCK!");
-                new Exception().printStackTrace();
-                Log.e("Update", m.toString());
-                Log.e("Update", m.toString());
-                System.exit(1);
-            }
-        }
-    }
 
-    private void drawBgLayer() {
-        Graphic.bindBitmap(backgroundID);
-        background.draw();
-    }
-
-    private void drawGameObjectLayer(List objects, int textureID) {
-        if (!objects.isEmpty()) {
-            Graphic.bindBitmap(textureID);
-            ((GameObject) objects.get(0)).prepareToDraw();
-            for (Object go : objects) {
-                ((GameObject) go).draw();
-            }
-        }
+        /* ГРАФОН */
+        EffectsLayer.update(dt);
     }
 
     private void draw() {
         Graphic.startDraw();
         Graphic.begin(Graphic.Mode.DRAW_BITMAPS);
-            drawBgLayer();
-        Graphic.begin(Graphic.Mode.DRAW_THRESHOLD_BITMAP);
-            drawGameObjectLayer(blood, bloodID);
+
+        Graphic.bindBitmap(backgroundID);
+        background.draw();
+
+        fxDrawBlood(bloodID);
+
         Graphic.begin(Graphic.Mode.DRAW_BITMAPS);
-            drawGameObjectLayer(lights, lightsID);
-            drawGameObjectLayer(explosionLights, explosionLightsID);
-            drawGameObjectLayer(bulls, bulletID);
+
+        fxDrawLights(lightsID, explosionLightsID);
+
+            drawGameObjectLayer(bullets, bulletID);
+            drawGameObjectLayer(rockets, rocketID);
+                Graphic.bindColor(1, 1, 1, 0.3f);     //draw half-transparent all units
             drawGameObjectLayer(teamedMen[0], redID);
             drawGameObjectLayer(teamedMen[1], blueID);
-        Graphic.begin(Graphic.Mode.DRAW_THRESHOLD_BITMAP);
-            drawGameObjectLayer(explosions, explosionID);
+                Graphic.bindColor(1, 1, 1, 1);        //draw opaque visible units
+            drawGameObjectLayer(visibleMen[0], redID);
+            drawGameObjectLayer(visibleMen[1], blueID);
+
+        fxDrawExplosions(explosionID);
+
         Graphic.begin(Graphic.Mode.DRAW_BITMAPS);
             drawGameObjectLayer(Buildings.getBarriers(), houseID);
-        Graphic.begin(Graphic.Mode.DRAW_THRESHOLD_BITMAP);
-            drawGameObjectLayer(smoke, smokeID);
+
+        fxDrawSmoke(smokeID);
+
         Graphic.end();
+    }
+
+    /* TODO: DEBUG */
+
+    public static void killAll() {
+        for (Man m: men)
+            m.setIsNoNeededMore();
+    }
+
+    public static void setPhysicIsWorking(boolean value) {
+        playing =value;
+    }
+
+    public static void selectUnit(int num) {
+        if (num>=0 && num<=men.size()) {
+            makeSelection(men.get(num), lightSize);
+        }
+    }
+
+    public static void printUnit(int num) {
+        if (num>=0 && num<=men.size()) {
+            Log.i("PrintUnit ", num + ": " + men.get(num));
+        }
     }
 }

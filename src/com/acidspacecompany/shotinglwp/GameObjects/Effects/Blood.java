@@ -1,12 +1,13 @@
-package com.acidspacecompany.shotinglwp.GameObjects;
+package com.acidspacecompany.shotinglwp.GameObjects.Effects;
 
+import com.acidspacecompany.shotinglwp.GameObjects.GameObject;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 import com.acidspacecompany.shotinglwp.TimeFunctions.LinearTimeFunction;
 
 import java.util.Random;
 
-public class Smoke extends Point implements GameObject{
+public class Blood extends Point implements GameObject {
 
     private LinearTimeFunction alpha;
     private float time=0;
@@ -18,9 +19,9 @@ public class Smoke extends Point implements GameObject{
     @Override
     public void reMatrix() {
         if (resultMatrix!=-1)
-            Graphic.cleanResultMatrixID(resultMatrix, "Smoke");
+            Graphic.cleanResultMatrixID(resultMatrix, "Blood");
         resultMatrix=Graphic.getResultMatrixID(getX(), getY(), size, size,
-                rnd.nextFloat() * 360, "Smoke");
+                rnd.nextFloat() * 360, "Blood");
     }
 
     public void update(float dt){
@@ -30,22 +31,19 @@ public class Smoke extends Point implements GameObject{
 
     public void draw() {
         float t=alpha.getValue();
-        if (t<0.3f)
-            Graphic.bindColor(1, 1, 1, t/0.3f);
-        else
-            Graphic.bindColor(1, 1, 1, 1);
-        Graphic.setThresholdParams(t/2, t, t);
-        Graphic.bindResultMatrix(resultMatrix, "Smoke");
+        Graphic.setThresholdParams(t/2, t, (t+0.5f)/1.5f);
+        Graphic.bindResultMatrix(resultMatrix, "Blood");
         Graphic.drawBitmap();
     }
 
     @Override
     public void prepareToDraw() {
+        Graphic.bindColor(1, 1, 1, 1);
     }
 
     @Override
     public void dispose() {
-        Graphic.cleanResultMatrixID(resultMatrix, "Smoke");
+        Graphic.cleanResultMatrixID(resultMatrix, "Blood");
     }
 
     @Override
@@ -57,11 +55,11 @@ public class Smoke extends Point implements GameObject{
         return time<length;
     }
 
-    public Smoke(float x, float y, float size, float length) {
+    public Blood(float x, float y, float size, float length) {
         super(x, y);
         this.length=length;
         this.size=size;
-        alpha=new LinearTimeFunction(length, 1, 0);
+        alpha=new LinearTimeFunction(length, 0, 1);
         reMatrix();
     }
 }

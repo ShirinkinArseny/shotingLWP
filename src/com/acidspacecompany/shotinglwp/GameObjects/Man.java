@@ -7,10 +7,14 @@ import com.acidspacecompany.shotinglwp.Geometry.Segment;
 import com.acidspacecompany.shotinglwp.OpenGLWrapping.Graphic;
 import com.acidspacecompany.shotinglwp.World;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+
 public class Man extends Rectangle implements GameObject{
 
-    private float widthPow2;
     private float width2;
+    private float widthPow2;
     private float angle;
     private float speed;
     private float cosSpeed;
@@ -18,21 +22,45 @@ public class Man extends Rectangle implements GameObject{
     private float health=1f;
     private int blockX=0;
     private int blockY=0;
-    private Man visibleMan;
+    private LinkedList<Man> visibleMan=new LinkedList<>();
     private int rotateScaleMatrix=-1;
-    private float time=0;
-    private float timeLimit=0.3f;
+    private float bulletTime =0;
+    private float bulletTimeLimit =0.1f;
+    private float rocketTime =0;
+    private float rocketTimeLimit =10f;
+
+    private Man thisMan=this;
+    private Comparator<? super Man> comparator=new Comparator<Man>() {
+        @Override
+        public int compare(Man man, Man t1) {
+            return Float.compare(man.getSquaredDistanceToPoint(thisMan), t1.getSquaredDistanceToPoint(thisMan));
+        }
+    };
 
     public void cleanVisibility(){
-        visibleMan=null;
+        visibleMan.clear();
     }
 
     public void addVisibleMan(Man m) {
-        visibleMan=m;
+        visibleMan.add(m);
+        Collections.sort(visibleMan, comparator);
     }
 
     public Man getVisibleMan() {
-        return visibleMan;
+        for (int i=0; i<visibleMan.size(); i++) {
+            if (!visibleMan.get(i).getIsNeeded()) {
+                visibleMan.remove(0);
+                i--;
+            }
+            else
+            if (!Buildings.getConnected(visibleMan.get(i).getX(), visibleMan.get(i).getY(),
+                    getX(), getY())) {
+                visibleMan.remove(0);
+                i--;
+            }
+            else return visibleMan.get(0);
+        }
+        return null;
     }
 
     public void damage(float damage) {
@@ -56,16 +84,16 @@ public class Man extends Rectangle implements GameObject{
     }
 
     public void setIsNoNeededMore(){
+        health=-1;
     }
 
     public void prepareToDraw() {
-        Graphic.bindColor(1, 1, 1, 1);
     }
 
     public void draw() {
         if (disposed) {
-            BicycleDebugger.e("MAN.DRAW", "Man is already disposed, u CAN'T draw it!"); //todo
-            new Exception().printStackTrace();
+            //BicycleDebugger.e("MAN.DRAW", "Man is already disposed, u CAN'T draw it!"); //todo
+            //new Exception().printStackTrace();
         }
         else {
         Graphic.bindRotateScaleMatrix(rotateScaleMatrix, "Man");
@@ -86,23 +114,50 @@ public class Man extends Rectangle implements GameObject{
         reMatrix();
     }
 
+    public boolean canShot() {
+        return bulletTime <=0;
+    }
+
+    public boolean canLaunchRocket() {
+        return rocketTime <=0;
+    }
+
     public void shot() {
-        if (time<=0) {
+        if (canShot()) {
             World.shot(this, angle);
-            time+=timeLimit;
+            bulletTime += bulletTimeLimit;
+        }
+    }
+
+    public void launchRocket(Point to) {
+        if (canLaunchRocket()) {
+            World.launchRocket(this, angle, to);
+            rocketTime += rocketTimeLimit;
         }
     }
 
     public boolean getIsIntersect(Segment s) {
-        if (widthPow2 < s.getSquaredLengthToLine(this)) return false;
+        //System.out.println("Accepted distance: "+width2);
+        //System.out.println("Distance: "+s.getLengthToLine(this));
+
+        if (widthPow2 < s.getLengthToLine(this)){
+            //System.out.println("Accepted distance: "+widthPow2);
+            //System.out.println("Distance: " + s.getLengthToLine(this));
+            return false;
+        }
 
         /*if (s.getAngleInStartIsAcute(this))
         return widthPow2 >=s.getStart().getSquaredDistanceToPoint(this);
 
         if (s.getAngleInEndIsAcute(this))
         return widthPow2 >=s.getEnd().getSquaredDistanceToPoint(this);*/
+        return true;
 
-        return (s.getIsBetween(this));
+        /*if (s.getIsBetween(this)) return true;
+        //System.out.println("Not between");
+        if (s.getStart().getSquaredDistanceToPoint(this)<widthPow2) return true;
+        if (s.getEnd().getSquaredDistanceToPoint(this)<widthPow2) return true;
+        return false;*/
     }
 
     public int getBlockX() {
@@ -116,28 +171,36 @@ public class Man extends Rectangle implements GameObject{
     public void update(float dt) {
         float dx=dt*cosSpeed;
         float dy=dt*sinSpeed;
-        Segment s=new Segment(getX(), getY(), getX() + dx, getY() + dy);
-        for (Building b: Buildings.getPotentialBarriers(getX() + dx, getY() + dy))
-        {
-              for (Segment s2: b.getSegments())  {
-                  Point intr=s.getIntersection(s);
-                  if (intr!=null) {
-                      move(s2.getNormal().multiply(s2.getSide(this)));
-                  }
-              }
+        int newBlockX= Buildings.getXBlock(getX() + dx);
+        int newBlockY= Buildings.getYBlock(getY() + dy);
+        if (Buildings.getContainsPotentialBarriers(blockX, blockY)) {
+            return;
         }
-        blockX= (int) (s.getEnd().getX());
-        blockY= (int) (s.getEnd().getY());
+        blockX=newBlockX;
+        blockY=newBlockY;
         move(dx, dy);
-        if (time>0) time-=dt;
+        if (bulletTime >0) bulletTime -=dt;
+        if (rocketTime >0) rocketTime -=dt;
     }
 
     public Man(float x, float y, int w, float speed) {
         super(x, y, w, w);
         width2=w/2;
-        widthPow2=w*w*4;
+        widthPow2=width2*width2;
         this.speed=speed;
         setTarget(new Point(50, 50));
+    }
+
+    @Deprecated
+    public Man(float x, float y, int w, float speed, float dummy) {
+        super(x, y, w, w);
+        width2=w/2;
+        widthPow2=width2*width2;
+        this.speed=speed;
+    }
+
+    public String toString() {
+        return super.toString()+" hp: "+health+" visibility: "+(getVisibleMan()!=null);
     }
 
     public void reMatrix() {

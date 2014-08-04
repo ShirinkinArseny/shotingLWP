@@ -9,6 +9,7 @@ public class Segment {
     protected float sin;
     private float angle;
     private float dx, dy, sXeY_eXsY, sxsydxdy;//for
+    private float A, B, C;//for
     private float minx;
     private float miny;
     private float maxx;
@@ -25,9 +26,9 @@ public class Segment {
                 -  point.getY()* dx + sxsydxdy;
     }
 
-    public double getSquaredLengthToLine(Point from) {
-        float midRes=-dy * from.x + dx * from.y + sXeY_eXsY;
-        return midRes*midRes / length;
+    public double getLengthToLine(Point from) {
+        float midRes=dy * from.x + dx * from.y + sXeY_eXsY;
+        return Math.abs(midRes / length);
     }
 
     public void move(float dx, float dy) {
