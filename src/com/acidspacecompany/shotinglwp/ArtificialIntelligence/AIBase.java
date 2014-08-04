@@ -4,7 +4,6 @@ import com.acidspacecompany.shotinglwp.GameObjects.Man;
 
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 public class AIBase {
 
@@ -12,7 +11,7 @@ public class AIBase {
 
     private float timer;
 
-    public AIBase(List<Man> ourTeam, Set<Man> visibleEnemies) {
+    public AIBase(List<Man> ourTeam, List<Man> visibleEnemies) {
 
     }
 

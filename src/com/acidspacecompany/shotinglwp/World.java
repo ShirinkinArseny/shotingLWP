@@ -39,9 +39,9 @@ public class World {
     private static Background background=new Background();
     private static LinkedList<Man> men = new LinkedList<>();
     private static LinkedList<Man>[] teamedMen = new LinkedList[]{new LinkedList(), new LinkedList()};
+    private static LinkedList<Man>[] visibleMen = new LinkedList[]{new LinkedList(), new LinkedList()};
     private static LinkedList<Bullet> bullets = new LinkedList<>();
     private static LinkedList<Rocket> rockets = new LinkedList<>();
-    private static HashSet<Man>[] visibleMen = new HashSet[]{new HashSet(), new HashSet()};
     private static AIBase[] ais=new AIBase[2];
     private static final Random rnd = new Random();
     private static final float squaredVisibleDistance = 40000;

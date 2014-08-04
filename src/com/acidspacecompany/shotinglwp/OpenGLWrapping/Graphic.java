@@ -335,7 +335,6 @@ public class Graphic {
     /*
     ------------------------------ OPTIMISATION START LINE -------------------------------------------
     */
-    //TODO: чекать уже используемую матрицу
 
     public static int getScaleMatricesCount() {
         return rotateScaleMatrices.size();
