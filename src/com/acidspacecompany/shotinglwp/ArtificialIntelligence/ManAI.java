@@ -2,6 +2,7 @@ package com.acidspacecompany.shotinglwp.ArtificialIntelligence;
 
 import com.acidspacecompany.shotinglwp.ArtificialIntelligence.MessageSystem.Message;
 import com.acidspacecompany.shotinglwp.ArtificialIntelligence.MessageSystem.MessageHandler;
+import com.acidspacecompany.shotinglwp.ArtificialIntelligence.ShittyAIModel.TackticAlgorithm;
 import com.acidspacecompany.shotinglwp.ArtificialIntelligence.State.ManState;
 import com.acidspacecompany.shotinglwp.ArtificialIntelligence.State.ManStates.SeekState;
 import com.acidspacecompany.shotinglwp.GameObjects.Man;
@@ -20,6 +21,13 @@ public class ManAI {
     //Глобальное состояние юнита
     private ManState globalState;
 
+    private float age=0;
+
+    private TackticAlgorithm algorithm;
+    public void setTacktickAlgo(TackticAlgorithm ta) {
+        algorithm=ta;
+    }
+
     //Система для сообщения между юнитами
     private MessageHandler messageHandler;
     public void setMessageHandler(MessageHandler messageHandler) {
@@ -28,6 +36,8 @@ public class ManAI {
     public void sendMessage(int addresseeID, float deliverTime, int message) {
         messageHandler.addMessage(new Message(unitID, addresseeID, deliverTime, message));
     }
+
+
 
     //ID юнита (для сообщений)
     int unitID;
@@ -52,6 +62,8 @@ public class ManAI {
     public void update(float dt) {
         //Обновляем состояние юнита
         currentState.update(dt, this);
+        age+=dt;
+        algorithm.doSomAction(age, body);
     }
 
     public void setState(ManState newState) {
