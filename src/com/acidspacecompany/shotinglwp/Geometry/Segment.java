@@ -27,7 +27,7 @@ public class Segment {
     }
 
     public double getLengthToLine(Point from) {
-        float midRes=dy * from.x + dx * from.y + sXeY_eXsY;
+        float midRes=-dy * from.x + dx * from.y + sXeY_eXsY;
         return Math.abs(midRes / length);
     }
 

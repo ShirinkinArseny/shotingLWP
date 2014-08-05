@@ -1,5 +1,6 @@
 package com.acidspacecompany.shotinglwp.GameObjects.Shells;
 
+import com.acidspacecompany.shotinglwp.GameObjects.Building;
 import com.acidspacecompany.shotinglwp.GameObjects.Buildings;
 import com.acidspacecompany.shotinglwp.GameObjects.GameObject;
 import com.acidspacecompany.shotinglwp.Geometry.Segment;
@@ -46,11 +47,11 @@ public abstract class Shell extends Segment implements GameObject {
         float ny=getEnd().getY();
         motion=new Segment(lx, ly, nx, ny);
 
-        if (Buildings.getContainsPotentialBarriers(
-                Buildings.getXBlock(lx),
-                Buildings.getYBlock(ly)
-        )) {
-            setIsNoNeededMore();
+        for (Building b: Buildings.getPotentialBarriers(lx, ly)) {
+             if (b.intersectsBySegmentIntersection(motion)) {
+                 setIsNoNeededMore();
+                 break;
+             }
         }
 
     }

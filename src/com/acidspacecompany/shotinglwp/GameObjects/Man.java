@@ -12,6 +12,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 
+import static com.acidspacecompany.shotinglwp.GameObjects.Effects.EffectsLayer.makeBlood;
+
 public class Man extends Rectangle implements GameObject{
 
     private ManAI brain=new ManAI(this);
@@ -43,6 +45,8 @@ public class Man extends Rectangle implements GameObject{
         }
     };
 
+
+
     public void cleanVisibility(){
         visibleMan.clear();
     }
@@ -71,6 +75,7 @@ public class Man extends Rectangle implements GameObject{
 
     public void damage(float damage) {
         health-=damage;
+        makeBlood(this, World.bloodSize);
     }
 
     public boolean getIsNeeded() {
@@ -147,8 +152,7 @@ public class Man extends Rectangle implements GameObject{
         //System.out.println("Distance: "+s.getLengthToLine(this));
 
         if (widthPow2 < s.getLengthToLine(this)){
-            //System.out.println("Accepted distance: "+widthPow2);
-            //System.out.println("Distance: " + s.getLengthToLine(this));
+            //System.out.println("Accepted distance: "+widthPow2+"\nDistance: " + s.getLengthToLine(this));
             return false;
         }
 
