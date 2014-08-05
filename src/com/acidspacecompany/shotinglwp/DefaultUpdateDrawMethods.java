@@ -22,9 +22,9 @@ public class DefaultUpdateDrawMethods {
 
     public static void removeUnusedGameObjectsWithoutDispose(List objects) {
         for (int i = 0; i < objects.size(); i++) {
-            if (!((GameObject) objects.get(i)).getIsNeeded()) {
+            if (!((GameObject)objects.get(i)).getIsNeeded()) {
                 objects.remove(i);
-                if (i>0) i--;
+                i--;
             }
         }
     }

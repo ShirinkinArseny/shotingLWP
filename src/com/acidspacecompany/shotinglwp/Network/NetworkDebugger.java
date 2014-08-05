@@ -35,6 +35,11 @@ public class NetworkDebugger {
                         break;
                     }
 
+                    case "bullet" : {
+                        World.printBullets();
+                        break;
+                    }
+
                     case "pause" : {
                         World.setPhysicIsWorking(false);
                         break;

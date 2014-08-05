@@ -103,6 +103,6 @@ public class Point {
 
 
     public String toString() {
-        return Math.ceil(x) + " " +  Math.ceil(y);
+        return x + " " +  y;
     }
 }

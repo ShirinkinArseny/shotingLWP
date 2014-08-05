@@ -58,7 +58,7 @@ public class World {
     private int explosionLightsID;
     private int explosionID;
     private int smokeID;
-    public static final float shellDamage =0.2f;
+    public static final float shellDamage =0.1f;
     public static final float bulletLength=80;
     public static final float bulletSpeed=500;
     public static final float bloodSize=20;
@@ -111,17 +111,18 @@ public class World {
     }
 
     public static void shot(Point p, float angle) {
-        float delta=(rnd.nextFloat()-0.5f)/12;
-        delta=0;
+        float delta=(rnd.nextFloat()-0.5f)/6;
         Bullet b = new Bullet(p.getX(), p.getY(), bulletLength, angle+delta, bulletSpeed);
-        makeLight(b.getStart(), World.lightSize);
+        b.move(manSize);
+        makeLight(p, World.lightSize);
         bullets.add(b);
     }
 
     public static void launchRocket(Point p, float angle, Point to) {
         float delta=(rnd.nextFloat()-0.5f)/12;
         Rocket b = new Rocket(p.getX(), p.getY(), bulletLength, angle+delta, bulletSpeed, to.getSquaredDistanceToPoint(p));
-        makeLight(b.getStart(), World.lightSize);
+        b.move(manSize);
+        makeLight(p, World.lightSize);
         rockets.add(b);
     }
 
@@ -283,24 +284,22 @@ public class World {
             else {
 
                 if (b.getDx() > 0) {
-                    int index = getNearestMenIndex(b.getStart().getX()-bulletLength);
-                    int target = getNearestMenIndex(b.getEnd().getX()+bulletLength);
+                    int index = 0;//getNearestMenIndex(b.getStart().getX());          TODO
+                    int target = men.size();//getNearestMenIndex(b.getEnd().getX());  TODO
                     for (int i = index; i < target; i++) {
                         if (men.get(i).getIsIntersect(b.getMotion())) {
                             men.get(i).damage(shellDamage);
                             b.setIsNoNeededMore();
-                            makeBlood(men.get(i), bloodSize);
                             break;
                         }
                     }
                 } else {
-                    int target = getNearestMenIndex(b.getStart().getX()-bulletLength);
-                    int index = getNearestMenIndex(b.getEnd().getX()+bulletLength);
+                    int target = 0;//getNearestMenIndex(b.getStart().getX());         TODO
+                    int index = men.size();//getNearestMenIndex(b.getEnd().getX());   TODO
                     for (int i = target; i < index; i++) {
                         if (men.get(i).getIsIntersect(b.getMotion())) {
                             men.get(i).damage(shellDamage);
                             b.setIsNoNeededMore();
-                            makeBlood(men.get(i), bloodSize);
                             break;
                         }
                     }
@@ -341,7 +340,7 @@ public class World {
         //    shot(400, 240, angle);
         //}
         //angle += 0.01f;
-        if (rnd.nextInt(100) == 0)
+        if (rnd.nextInt(10) == 0)
             addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), rnd.nextInt(2));
 
 
@@ -350,8 +349,22 @@ public class World {
             timer -= timerLimit;
             updateVisibility();
         }
-        for (AIBase ai : ais) {
-            ai.update(dt);
+
+        for (Man m: men) {
+            if (rnd.nextInt(50) == 0)
+                m.setTarget(new Point(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight)));
+            else
+            if (m.getVisibleMan()!=null) {
+                if (rnd.nextInt(25) == 0) {
+                    m.setTarget(m.getVisibleMan().get(0));
+                } else {
+                    m.stopAndSetAngle(m.getVisibleMan().get(0));
+                    if (m.canShot())
+                        m.shot();
+                    else if (m.canLaunchRocket())
+                        m.launchRocket(m.getVisibleMan().get(0));
+                }
+            }
         }
     }
 
@@ -372,17 +385,11 @@ public class World {
             updateGameObjects(men, dt);
             removeUnusedGameObjects(men);
             sortPeople();
-            for (Man m : men) {
-                if (!m.getIsNeeded()) {
-                    Log.e("Update0", "DEAD ALIVE MAN, FUUUUUCK!");
-                    new Exception().printStackTrace();
-                    Log.e("Update0", m.toString());
-                    Log.e("Update0", m.toString());
-                    System.exit(1);
-                }
-            }
             removeUnusedGameObjectsWithoutDispose(teamedMen[0]);
             removeUnusedGameObjectsWithoutDispose(teamedMen[1]);
+            removeUnusedGameObjectsWithoutDispose(visibleMen[0]);
+            removeUnusedGameObjectsWithoutDispose(visibleMen[1]);
+
         }
 
         /* ГРАФОН */
@@ -390,6 +397,8 @@ public class World {
     }
 
     private void draw() {
+
+
         Graphic.startDraw();
         Graphic.begin(Graphic.Mode.DRAW_BITMAPS);
 
@@ -404,12 +413,9 @@ public class World {
 
             drawGameObjectLayer(bullets, bulletID);
             drawGameObjectLayer(rockets, rocketID);
-                Graphic.bindColor(1, 1, 1, 0.3f);     //draw half-transparent all units
+
             drawGameObjectLayer(teamedMen[0], redID);
             drawGameObjectLayer(teamedMen[1], blueID);
-                Graphic.bindColor(1, 1, 1, 1);        //draw opaque visible units
-            drawGameObjectLayer(visibleMen[0], redID);
-            drawGameObjectLayer(visibleMen[1], blueID);
 
         fxDrawExplosions(explosionID);
 
@@ -441,6 +447,13 @@ public class World {
     public static void printUnit(int num) {
         if (num>=0 && num<=men.size()) {
             Log.i("PrintUnit ", num + ": " + men.get(num));
+        }
+    }
+
+    public static void printBullets() {
+        Log.i("PrintBullet ", "TOTAL "+bullets.size()+" BULLETS");
+        for (Bullet bullet : bullets) {
+            Log.i("PrintBullet ", bullet.getMotion().getStart() + " >> " + bullet.getMotion().getEnd());
         }
     }
 }

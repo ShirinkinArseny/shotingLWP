@@ -1,7 +1,6 @@
 package com.acidspacecompany.shotinglwp.GameObjects;
 
 import com.acidspacecompany.shotinglwp.ArtificialIntelligence.ManAI;
-import com.acidspacecompany.shotinglwp.BicycleDebugger;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.Geometry.Rectangle;
 import com.acidspacecompany.shotinglwp.Geometry.Segment;
@@ -37,7 +36,7 @@ public class Man extends Rectangle implements GameObject{
     private float rocketTime =0;
     private float rocketTimeLimit =10f;
 
-    public ManAI getBrains() {     //thnx for fr8 IDE
+    public ManAI getBrains() {     //thnx for gr8 IDE
         return brain;
     }
 
@@ -90,14 +89,7 @@ public class Man extends Rectangle implements GameObject{
         return health>=0;
     }
 
-    private boolean disposed=false;
     public void dispose() {
-        if (disposed) {
-            BicycleDebugger.e("Man.dispose", "ALREADY DISPOSED!");
-            new Exception().printStackTrace();
-            System.exit(1);
-        }
-        disposed=true;
         Graphic.cleanScaleMatrixID(rotateScaleMatrix, "Man");
         //BicycleDebugger.i("MAN.dispose", "Droppd " + rotateScaleMatrix);
     }
@@ -107,16 +99,12 @@ public class Man extends Rectangle implements GameObject{
     }
 
     public void prepareToDraw() {
+        Graphic.bindColor(1, 1, 1, 1);
     }
 
     public void draw() {
-        if (disposed) {
-            //BicycleDebugger.e("MAN.DRAW", "Man is already disposed, u CAN'T draw it!"); //todo
-            //new Exception().printStackTrace();
-        }
-        else {
         Graphic.bindRotateScaleMatrix(rotateScaleMatrix, "Man");
-        Graphic.drawBitmap(getX(), getY());         }
+        Graphic.drawBitmap(getX(), getY());
     }
 
     public void setTarget(Point p) {
@@ -169,13 +157,13 @@ public class Man extends Rectangle implements GameObject{
 
         if (s.getAngleInEndIsAcute(this))
         return widthPow2 >=s.getEnd().getSquaredDistanceToPoint(this);*/
-        return true;
+        //return true;
 
-        /*if (s.getIsBetween(this)) return true;
+        if (s.getIsBetween(this)) return true;
         //System.out.println("Not between");
         if (s.getStart().getSquaredDistanceToPoint(this)<widthPow2) return true;
         if (s.getEnd().getSquaredDistanceToPoint(this)<widthPow2) return true;
-        return false;*/
+        return false;
     }
 
     public int getBlockX() {

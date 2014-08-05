@@ -56,6 +56,10 @@ public abstract class Shell extends Segment implements GameObject {
 
     }
 
+    public void move(float delta) {
+        move(delta*cos, delta*sin);
+    }
+
 
     public void setIsNoNeededMore(){
         needable=false;
