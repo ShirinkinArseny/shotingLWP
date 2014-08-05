@@ -11,6 +11,7 @@ import com.acidspacecompany.shotinglwp.World;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 
 import static com.acidspacecompany.shotinglwp.GameObjects.Effects.EffectsLayer.makeBlood;
 
@@ -23,6 +24,9 @@ public class Man extends Rectangle implements GameObject{
     private float speed;
     private float cosSpeed;
     private float sinSpeed;
+    public Point getSpeed() {
+        return new Point(cosSpeed, sinSpeed);
+    }
     private float health=1f;
     private int blockX=0;
     private int blockY=0;
@@ -56,7 +60,11 @@ public class Man extends Rectangle implements GameObject{
         Collections.sort(visibleMan, comparator);
     }
 
-    public Man getVisibleMan() {
+    /**
+     * Получение всех юнитов, видимых данным
+     * @return Юниты
+     */
+    public List<Man> getVisibleMan() {
         for (int i=0; i<visibleMan.size(); i++) {
             if (!visibleMan.get(i).getIsNeeded()) {
                 visibleMan.remove(0);
@@ -68,7 +76,7 @@ public class Man extends Rectangle implements GameObject{
                 visibleMan.remove(0);
                 i--;
             }
-            else return visibleMan.get(0);
+            else return visibleMan;
         }
         return null;
     }
