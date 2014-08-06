@@ -24,7 +24,7 @@ public class Rectangle extends ConvexPolygon{
         this.h2=h;
     }
 
-    public Rectangle(float x, float y, int w, int h) {
+    public Rectangle(float x, float y, float w, float h) {
         super(new Point[]{
                 new Point(x+w/2, y-h/2),
                 new Point(x+w/2, y+h/2),

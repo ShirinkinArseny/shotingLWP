@@ -5,6 +5,13 @@ public class Point {
     float x;
     float y;
 
+    public static float getScalarMultiply(Point a, Point b) {
+        return a.x*b.x + a.y*b.y;
+    }
+    public static float getScalarMultiply(Segment a, Segment b) {
+        return a.getDx()*b.getDx() + a.getDy()*b.getDy();
+    }
+
     public float getX() {
         return x;
     }

@@ -34,8 +34,8 @@ public class World {
 
     private static boolean playing=true;/* TODO: DEBUG */
 
-    private boolean active = true;//is working
-    private long lastTime;
+    private static boolean active = true;//is working
+    private static long lastTime;
     private static Background background=new Background();
     private static LinkedList<Man> men = new LinkedList<>();
     private static LinkedList<Man>[] teamedMen = new LinkedList[]{new LinkedList(), new LinkedList()};
@@ -47,30 +47,30 @@ public class World {
     private static final float squaredVisibleDistance = 40000;
     private static Resources res;
     private static float pictureSizeCoef;
-    private int backgroundID;
-    private int redID;
-    private int blueID;
-    private int houseID;
-    private int bulletID;
-    private int rocketID;
-    private int bloodID;
-    private int lightsID;
-    private int explosionLightsID;
-    private int explosionID;
-    private int smokeID;
-    public static final float shellDamage =0.1f;
-    public static final float bulletLength=80;
-    public static final float bulletSpeed=500;
-    public static final float bloodSize=20;
-    public static final float lightSize=30;
-    public static final int manSize=18;
-    public static final int manSpeed=40;
-    public static final int explosionRadius=35;
-    public static final int explosionRadius4=explosionRadius*4;
-    public static final int explosionRadius13= (int) (explosionRadius*1.3f);
-    public static final int explosionRadius_2=explosionRadius/2;
-    public static final int explosionRadius_4=explosionRadius/4;
-    public static final int explosionRadius_4_13=(int) (explosionRadius_4*1.3f);
+    private static int backgroundID;
+    private static int redID;
+    private static int blueID;
+    private static int houseID;
+    private static int bulletID;
+    private static int rocketID;
+    private static int bloodID;
+    private static int lightsID;
+    private static int explosionLightsID;
+    private static int explosionID;
+    private static int smokeID;
+    public static float shellDamage =0.1f;
+    public static float bulletLength=80;
+    public static float bulletSpeed=500;
+    public static float bloodSize=20;
+    public static float lightSize=30;
+    public static float manSize=18;
+    public static float manSpeed=40;
+    public static float explosionRadius=35;
+    public static float explosionRadius4=explosionRadius*4;
+    public static float explosionRadius13= (int) (explosionRadius*1.3f);
+    public static float explosionRadius_2=explosionRadius/2;
+    public static float explosionRadius_4=explosionRadius/4;
+    public static float explosionRadius_4_13=(int) (explosionRadius_4*1.3f);
     private static NetworkDebugger nwd=new NetworkDebugger();
 
     public static int getDisplayWidth() {
@@ -100,8 +100,8 @@ public class World {
         for (int i=0; i<10; i++)  {
 
             Point tmpPoint=new Point(
-                    p.getX()-explosionRadius_2+rnd.nextInt(explosionRadius),
-                    p.getY()-explosionRadius_2+rnd.nextInt(explosionRadius));
+                    p.getX()-explosionRadius_2+rnd.nextInt((int) explosionRadius),
+                    p.getY()-explosionRadius_2+rnd.nextInt((int) explosionRadius));
 
             makeExplosion(tmpPoint, explosionRadius_4);
             makeSmoke(tmpPoint, explosionRadius_4_13);
@@ -126,43 +126,38 @@ public class World {
         rockets.add(b);
     }
 
-    public void addMan() {
+    public static void addMan() {
         addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), rnd.nextInt(2));
     }
 
-    private void addMan(Man m, int team) {
+    private static void addMan(Man m, int team) {
         men.add(m);
         teamedMen[team].add(m);
+        ais[team].manAdded(m);
     }
 
-    public World(Context context) {
+    public static void init(Context context) {
         res = context.getResources();
-
-        for (int i = 0; i < 10; i++)
-            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), i % 2);
-
-        Buildings.init(displayWidth, displayHeight);
-        Buildings.addBarrier(new Building(240,
-                80, 60, 30, 0));
-        Buildings.addBarrier(new Building(240,
-                200, 60, 30, 0));
-        Buildings.addBarrier(new Building(240,
-                320, 60, 30, 0));
-        Buildings.addBarrier(new Building(560,
-                80, 60, 30, 0));
-        Buildings.addBarrier(new Building(560,
-                200, 60, 30, 0));
-        Buildings.addBarrier(new Building(560,
-                320, 60, 30, 0));
-        Buildings.finishAddingBarriers();
+        DisplayMetrics metrics = res.getDisplayMetrics();
+        pictureSizeCoef = Math.max(metrics.widthPixels, metrics.heightPixels) / 800f;
+        resize(metrics.widthPixels, metrics.heightPixels);
 
         ais[0]=new AIBase(teamedMen[0], visibleMen[1]);
         ais[1]=new AIBase(teamedMen[1], visibleMen[0]);
-    }
 
-    public void init() {
-        DisplayMetrics metrics = res.getDisplayMetrics();
-        pictureSizeCoef = Math.max(metrics.widthPixels, metrics.heightPixels) / 800f;
+
+        bulletLength=getScaledValue(80);
+        bulletSpeed=getScaledValue(500);
+        bloodSize=getScaledValue(20);
+        lightSize=getScaledValue(30);
+        manSize=getScaledValue(18);
+        manSpeed=getScaledValue(40);
+        explosionRadius=getScaledValue(35);
+        explosionRadius4=explosionRadius*4;
+        explosionRadius13= (int) (explosionRadius*1.3f);
+        explosionRadius_2=explosionRadius/2;
+        explosionRadius_4=explosionRadius/4;
+        explosionRadius_4_13=(int) (explosionRadius_4*1.3f);
 
         //todo: sizes
         Bitmap background = getScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.background),
@@ -208,22 +203,41 @@ public class World {
         Bitmap smoke = getScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.smoke),
                 (int) getScaledValue(256));
         smokeID = Graphic.genTexture(smoke);
+
+
+        for (int i = 0; i < 100; i++)
+            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), i % 2);
+
+        Buildings.init(displayWidth, displayHeight);
+        Buildings.addBarrier(new Building(getScaledValue(240),
+                getScaledValue(80), getScaledValue(60), getScaledValue(30), 0));
+        Buildings.addBarrier(new Building(getScaledValue(240),
+                getScaledValue(200), getScaledValue(60), getScaledValue(30), 0));
+        Buildings.addBarrier(new Building(getScaledValue(240),
+                getScaledValue(320), getScaledValue(60), getScaledValue(30), 0));
+        Buildings.addBarrier(new Building(getScaledValue(560),
+                getScaledValue(80), getScaledValue(60), getScaledValue(30), 0));
+        Buildings.addBarrier(new Building(getScaledValue(560),
+                getScaledValue(200), getScaledValue(60), getScaledValue(30), 0));
+        Buildings.addBarrier(new Building(getScaledValue(560),
+                getScaledValue(320), getScaledValue(60), getScaledValue(30), 0));
+        Buildings.finishAddingBarriers();
     }
 
-    public void pausePainting() {
+    public static void pausePainting() {
         active = false;
     }
 
-    public void resumePainting() {
+    public static void resumePainting() {
         active = true;
         lastTime = System.currentTimeMillis();
     }
 
-    public void stopPainting() {
+    public static void stopPainting() {
         active = false;
     }
 
-    public void updateAndDraw() {
+    public static void updateAndDraw() {
         long cTime = System.currentTimeMillis();
         float delta = (cTime - lastTime) / 1000f;
         lastTime = cTime;
@@ -249,7 +263,7 @@ public class World {
     }
 
     //Пузырёк в продакшоне :3
-    private void sortPeople() {
+    private static void sortPeople() {
         for (int i = 0; i < men.size(); i++) {
             boolean swapped = false;
             for (int j = 0; j < men.size() - 1; j++)
@@ -273,7 +287,7 @@ public class World {
         return leftIndex;
     }
 
-    private void checkManAndShellForIntersection(List bullets) {
+    private static void checkManAndShellForIntersection(List bullets) {
         for (Object b2 : bullets) {
             Shell b=(Shell)b2;
 
@@ -308,12 +322,12 @@ public class World {
         }
     }
 
-    private boolean getIsVisible(Man m1, Man m2) {
+    private static boolean getIsVisible(Man m1, Man m2) {
         return m1.getSquaredDistanceToPoint(m2) <= squaredVisibleDistance &&
-                Buildings.getConnected(m1.getBlockX(), m1.getBlockY(), m2.getBlockX(), m2.getBlockY());
+                Buildings.getConnected(m1.getX(), m1.getY(), m2.getX(), m2.getY());
     }
 
-    private void updateVisibility() {
+    private static void updateVisibility() {
         visibleMen[0].clear();
         visibleMen[1].clear();
 
@@ -335,13 +349,13 @@ public class World {
     }
 
     //private float angle = 0;
-    public void updateAI(float dt) {
+    public static void updateAI(float dt) {
         //if (rnd.nextInt(3) == 0) {
         //    shot(400, 240, angle);
         //}
         //angle += 0.01f;
-        if (rnd.nextInt(10) == 0)
-            addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), rnd.nextInt(2));
+        //if (rnd.nextInt(10) == 0)
+        //    addMan(new Man(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight), manSize, manSpeed), rnd.nextInt(2));
 
 
         timer += dt;
@@ -350,25 +364,12 @@ public class World {
             updateVisibility();
         }
 
-        for (Man m: men) {
-            if (rnd.nextInt(50) == 0)
-                m.setTarget(new Point(rnd.nextInt(displayWidth), rnd.nextInt(displayHeight)));
-            else
-            if (m.getVisibleMan()!=null) {
-                if (rnd.nextInt(25) == 0) {
-                    m.setTarget(m.getVisibleMan().get(0));
-                } else {
-                    m.stopAndSetAngle(m.getVisibleMan().get(0));
-                    if (m.canShot())
-                        m.shot();
-                    else if (m.canLaunchRocket())
-                        m.launchRocket(m.getVisibleMan().get(0));
-                }
-            }
+        for (AIBase a: ais) {
+            a.update(dt);
         }
     }
 
-    public void update(float dt) {
+    public static void update(float dt) {
         if (playing) {
         /* TODO: DEBUG */
         /*---   bullets   ---*/
@@ -396,7 +397,7 @@ public class World {
         EffectsLayer.update(dt);
     }
 
-    private void draw() {
+    private static void draw() {
 
 
         Graphic.startDraw();

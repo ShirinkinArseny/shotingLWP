@@ -27,29 +27,28 @@ public class LiveWallpaperService extends OpenGLES20LiveWallpaperService {
 
         @Override
         public void onCreate(Context context) {
-            world = new World(context);
         }
 
         @Override
         public void onPause() {
-            world.pausePainting();
+            World.pausePainting();
         }
 
         @Override
         public void onDestroy() {
-            world.stopPainting();
+            World.stopPainting();
             Graphic.destroy();
         }
 
         @Override
         public void onResume() {
-            world.resumePainting();
+            World.resumePainting();
         }
 
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            world.init();
             Graphic.init(getBaseContext());
+            World.init(getBaseContext());
         }
 
         @Override

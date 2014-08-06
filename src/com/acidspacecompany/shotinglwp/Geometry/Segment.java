@@ -5,6 +5,7 @@ public class Segment {
     private Point start;
     private Point end;
     private float length;
+    private float lengthPow2;
     protected float cos;
     protected float sin;
     private float angle;
@@ -49,6 +50,8 @@ public class Segment {
         return length;
     }
 
+    public float getLengthPow2() {return lengthPow2; }
+
     public Point getPointOnSegment(float prop) {
         return new Point(start.getX()+cos*prop, start.getY()+sin*prop);
     }
@@ -69,6 +72,7 @@ public class Segment {
         start = new Point(x1, y1);
         end = new Point(x2, y2);
         length= (float) start.getDistanceToPoint(end);
+        lengthPow2 = length*length;
         sin=(y2-y1)/length;
         cos=(x2-x1)/length;
         angle= (float) Math.atan2(y2-y1, x2-x1);

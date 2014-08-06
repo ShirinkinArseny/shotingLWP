@@ -1,5 +1,6 @@
 package com.acidspacecompany.shotinglwp.GameObjects;
 
+import com.acidspacecompany.shotinglwp.ArtificialIntelligence.AIBase;
 import com.acidspacecompany.shotinglwp.ArtificialIntelligence.ManAI;
 import com.acidspacecompany.shotinglwp.Geometry.Point;
 import com.acidspacecompany.shotinglwp.Geometry.Rectangle;
@@ -12,11 +13,15 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.acidspacecompany.shotinglwp.GameObjects.Buildings.getXBlock;
+import static com.acidspacecompany.shotinglwp.GameObjects.Buildings.getYBlock;
 import static com.acidspacecompany.shotinglwp.GameObjects.Effects.EffectsLayer.makeBlood;
 
 public class Man extends Rectangle implements GameObject{
 
     private ManAI brain=new ManAI(this);
+
+
     private float width2;
     private float widthPow2;
     private float angle;
@@ -27,8 +32,6 @@ public class Man extends Rectangle implements GameObject{
         return new Point(cosSpeed, sinSpeed);
     }
     private float health=1f;
-    private int blockX=0;
-    private int blockY=0;
     private LinkedList<Man> visibleMan=new LinkedList<>();
     private int rotateScaleMatrix=-1;
     private float bulletTime =0;
@@ -166,30 +169,30 @@ public class Man extends Rectangle implements GameObject{
         return false;
     }
 
-    public int getBlockX() {
-        return blockX;
-    }
-
-    public int getBlockY() {
-        return blockY;
-    }
-
     public void update(float dt) {
         float dx=dt*cosSpeed;
         float dy=dt*sinSpeed;
-        int newBlockX= Buildings.getXBlock(getX() + dx);
-        int newBlockY= Buildings.getYBlock(getY() + dy);
-        if (Buildings.getContainsPotentialBarriers(blockX, blockY)) {
-            return;
+        float nx=getX() + dx;
+        float ny=getY() + dy;
+        Segment motion=new Segment(getX(), getY(), nx, ny);
+        for (Building bld: Buildings.getPotentialBarriers(nx, ny)) {
+            for (Segment sgm: bld.getSegments()) {
+                if (motion.getIntersects(sgm)) {
+                    float scalar = Point.getScalarMultiply(sgm, motion);
+                    float length = sgm.getLengthPow2();
+                    dx = sgm.getDx() * scalar / length;
+                    dy = sgm.getDy() * scalar / length;
+                    move(dx,dy);
+                    return;
+                }
+            }
         }
-        blockX=newBlockX;
-        blockY=newBlockY;
         move(dx, dy);
         if (bulletTime >0) bulletTime -=dt;
         if (rocketTime >0) rocketTime -=dt;
     }
 
-    public Man(float x, float y, int w, float speed) {
+    public Man(float x, float y, float w, float speed) {
         super(x, y, w, w);
         width2=w/2;
         widthPow2=width2*width2;

@@ -158,6 +158,4 @@ public class Buildings {
                 barriersInCellsContains[i][j]=false;
             }
     }
-
-
 }
